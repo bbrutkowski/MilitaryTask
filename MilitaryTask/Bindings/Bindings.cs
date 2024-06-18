@@ -12,13 +12,13 @@ namespace MilitaryTask.Bindings
             var services = new ServiceCollection();
             services.AddHttpClient();
 
-            services.AddTransient<IHttpService, MyHttpService>();
+            services.AddTransient<IFileService, FileService>();
 
             var serviceProvider = services.BuildServiceProvider();
             Bind<IServiceProvider>().ToConstant(serviceProvider);
 
             Bind<IHttpClientFactory>().ToMethod(ctx => serviceProvider.GetRequiredService<IHttpClientFactory>());
-            Bind<IHttpService>().ToMethod(ctx => serviceProvider.GetRequiredService<IHttpService>());
+            Bind<IFileService>().ToMethod(ctx => serviceProvider.GetRequiredService<IFileService>());
 
             Bind<IOrderCostsService>().To<OrderCostsService>(); 
         }

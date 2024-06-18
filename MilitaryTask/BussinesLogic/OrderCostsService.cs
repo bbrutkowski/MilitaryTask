@@ -5,10 +5,10 @@ namespace MilitaryTask.BussinesLogic
 {
     internal class OrderCostsService : IOrderCostsService
     {
-        private readonly IHttpService _httpService;
+        private readonly IFileService _httpService;
         private readonly string _orderCostsDataUrl = "https://developer.allegro.pl/documentation/#operation/getBillingEntries";
 
-        public OrderCostsService(IHttpService fileRepository) => _httpService = fileRepository;
+        public OrderCostsService(IFileService fileRepository) => _httpService = fileRepository;
 
         public async Task<Result<byte[]>> GetOrderCostsAsync()
         {

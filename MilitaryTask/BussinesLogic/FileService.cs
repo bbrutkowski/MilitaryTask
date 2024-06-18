@@ -15,11 +15,13 @@ namespace MilitaryTask.BussinesLogic
 
             try
             {
-                byte[] fileBytes = await httpClient.GetByteArrayAsync(url);
+                var fileBytes = await httpClient.GetByteArrayAsync(url);
+
                 return Result.Success(fileBytes);
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.Message); 
                 return Result.Failure<byte[]>(e.Message);
             }
         }
