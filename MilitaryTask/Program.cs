@@ -1,28 +1,20 @@
 ﻿using MilitaryTask.Bindings;
 using MilitaryTask.BussinesLogic.Interfaces;
 using Ninject;
-using System.Reflection;
 
 internal class Program
 {
-    private readonly IOrderCostsService _orderCostsService;
-
-    public Program(IOrderCostsService orderCostsService)
-    {
-        _orderCostsService = orderCostsService;
-    }
-
-    private static void Main()
+    private static async Task Main()
     {
         var kernel = new StandardKernel();
         kernel.Load(new Bindings());
         var orderCostsService = kernel.Get<IOrderCostsService>();
-
-        new Program(orderCostsService).Run();
+        await Run(orderCostsService);
     }
 
-    private async void Run()
+    private static async Task Run(IOrderCostsService orderCostsService)
     {
-        await _orderCostsService.GetOrderCostsAsync();
+        var costsData = await orderCostsService.GetOrderCostsAsync();
+        await orderCostsService.SaveOrderCostsAsync(costsData.Value);
     }
 }
