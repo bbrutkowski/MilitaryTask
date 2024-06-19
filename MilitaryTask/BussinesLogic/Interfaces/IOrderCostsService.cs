@@ -4,6 +4,7 @@ namespace MilitaryTask.BussinesLogic.Interfaces
 {
     public interface IOrderCostsService
     {
-        Task<Result<byte[]>> GetOrderCostsAsync();
+        Task<Result<string>> GetOrderCostsAsync();
+        Task<Result> SaveOrderCostsAsync(string data);
     }
 }

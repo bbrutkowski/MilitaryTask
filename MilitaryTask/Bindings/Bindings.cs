@@ -1,7 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using MilitaryTask.BussinesLogic;
 using MilitaryTask.BussinesLogic.Interfaces;
+using MilitaryTask.DataContext.Interface;
+using MilitaryTask.Repository;
+using MilitaryTask.Repository.Interfaces;
 using Ninject.Modules;
+using DataContextAlias = MilitaryTask.DataContext.DataContext;
 
 namespace MilitaryTask.Bindings
 {
@@ -21,6 +25,8 @@ namespace MilitaryTask.Bindings
             Bind<IFileService>().ToMethod(ctx => serviceProvider.GetRequiredService<IFileService>());
 
             Bind<IOrderCostsService>().To<OrderCostsService>(); 
+            Bind<IDataContext>().To<DataContextAlias>(); 
+            Bind<IOrderCostsRespository>().To<OrderCostsRepository>(); 
         }
     }
 }
