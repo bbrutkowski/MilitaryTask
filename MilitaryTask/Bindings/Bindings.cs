@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using MilitaryTask.BussinesLogic;
 using MilitaryTask.BussinesLogic.Interfaces;
-using MilitaryTask.DataContext.Interface;
 using MilitaryTask.Repository;
 using MilitaryTask.Repository.Interfaces;
 using Ninject.Modules;
@@ -16,16 +17,15 @@ namespace MilitaryTask.Bindings
             var services = new ServiceCollection();
             services.AddHttpClient();
 
-            services.AddTransient<IFileService, FileService>();
+            services.AddTransient<IAuthService, AuthService>();
 
             var serviceProvider = services.BuildServiceProvider();
             Bind<IServiceProvider>().ToConstant(serviceProvider);
 
             Bind<IHttpClientFactory>().ToMethod(ctx => serviceProvider.GetRequiredService<IHttpClientFactory>());
-            Bind<IFileService>().ToMethod(ctx => serviceProvider.GetRequiredService<IFileService>());
+            Bind<IAuthService>().ToMethod(ctx => serviceProvider.GetRequiredService<IAuthService>());
 
-            Bind<IOrderCostsService>().To<OrderCostsService>(); 
-            Bind<IDataContext>().To<DataContextAlias>(); 
+            Bind<IBillingService>().To<BillingService>(); 
             Bind<IOrderCostsRespository>().To<OrderCostsRepository>(); 
         }
     }

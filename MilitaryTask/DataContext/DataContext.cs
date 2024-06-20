@@ -1,22 +1,33 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MilitaryTask.DataContext.Interface;
 using MilitaryTask.Model;
 
 namespace MilitaryTask.DataContext
 {
-    public class DataContext : DbContext, IDataContext
+    public class DataContext : DbContext
     {
-        private const string _connectionString = "Data Source=.;Initial Catalog=MilitaryDB;Integrated Security=True;TrustServerCertificate=True;";
         public DbSet<Order> OrderTable { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(_connectionString);
+           base.OnConfiguring(optionsBuilder);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);  
+            modelBuilder.Entity<Order>(x =>
+            {
+                x.ToTable("OrderTable");
+
+                x.HasKey(y => y.Id);
+
+                x.Property(y => y.OrderId)
+                 .IsRequired()
+                 .HasMaxLength(45);
+
+                x.Property(y => y.ErpOrderId).IsRequired(false);
+                x.Property(y => y.InvoiceId).IsRequired(false);
+                x.Property(y => y.StoreId).IsRequired(false);                       
+            }); 
         }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

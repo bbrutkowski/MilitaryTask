@@ -1,25 +1,25 @@
 ﻿using CSharpFunctionalExtensions;
-using MilitaryTask.DataContext.Interface;
 using MilitaryTask.Model;
 using MilitaryTask.Repository.Interfaces;
+using DataContextAlias = MilitaryTask.DataContext.DataContext;
 
 namespace MilitaryTask.Repository
 {
     internal class OrderCostsRepository : IOrderCostsRespository
     {
-        private readonly IDataContext _dataContext;
+        private readonly DataContextAlias _dataContext;
         private const string EmptyDataError = "No data to save";
         private const string SavaDataError = "Error occured while saving data";
 
-        public OrderCostsRepository(IDataContext dataContext) => _dataContext = dataContext;
+        public OrderCostsRepository(DataContextAlias dataContext) => _dataContext = dataContext;
 
-        public async Task<Result> SaveOrderCostsAsync(Order order)
+        public async Task<Result> SaveOrderCostsAsync(List<Order> orders)
         {
-            if (order is null) return Result.Failure(EmptyDataError);
+            if (!orders.Any()) return Result.Failure(EmptyDataError);
 
             try
             {
-                await _dataContext.OrderTable.AddAsync(order);
+                await _dataContext.OrderTable.AddRangeAsync(orders);
                 await _dataContext.SaveChangesAsync(cancellationToken: default);
 
                 return Result.Success();
