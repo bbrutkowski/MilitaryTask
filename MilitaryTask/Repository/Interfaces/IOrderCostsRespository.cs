@@ -5,6 +5,6 @@ namespace MilitaryTask.Repository.Interfaces
 {
     public interface IOrderCostsRespository
     {
-        Task<Result> SaveOrderCostsAsync(Order order);
+        Task<Result> SaveOrderCostsAsync(List<Order> orders);
     }
 }

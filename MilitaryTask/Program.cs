@@ -1,5 +1,7 @@
-﻿using MilitaryTask.Bindings;
+﻿using Microsoft.Extensions.Configuration;
+using MilitaryTask.Bindings;
 using MilitaryTask.BussinesLogic.Interfaces;
+using MilitaryTask.DataContext;
 using Ninject;
 
 internal class Program
@@ -8,13 +10,21 @@ internal class Program
     {
         var kernel = new StandardKernel();
         kernel.Load(new Bindings());
-        var orderCostsService = kernel.Get<IOrderCostsService>();
+        var orderCostsService = kernel.Get<IBillingService>();
+
+        var context = kernel.Get<DataContext>();
+
         await Run(orderCostsService);
     }
 
-    private static async Task Run(IOrderCostsService orderCostsService)
+    private static async Task Run(IBillingService orderCostsService)
     {
-        var costsData = await orderCostsService.GetOrderCostsAsync();
-        await orderCostsService.SaveOrderCostsAsync(costsData.Value);
+        var getResult = await orderCostsService.GetBillingListAsync();
+        if (getResult.IsSuccess) await Console.Out.WriteLineAsync("The list of billings has been successfully downloaded." +
+            "Now it will be saved in the database");
+
+        Console.ReadKey();
+
+
     }
 }
