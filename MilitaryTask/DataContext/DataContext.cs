@@ -5,11 +5,19 @@ namespace MilitaryTask.DataContext
 {
     public class DataContext : DbContext
     {
-        public DbSet<Order> OrderTable { get; set; }
+        private const string _connectionString = "Data Source=.;Initial Catalog=MilitaryDB;Integrated Security=True;TrustServerCertificate=True;";
 
+        public DbSet<Order> OrderTable { get; set; }
+        public DbSet<BillingEntry> Billings { get; set; }
+        public DbSet<Model.Type> BillingTypes { get; set; }
+        public DbSet<Offer> Offers { get; set; }
+        public DbSet<Tax> Taxes { get; set; }
+        public DbSet<Amount> Values { get; set; }
+        public DbSet<Balance> Balances { get; set; }
+        
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-           base.OnConfiguring(optionsBuilder);
+            optionsBuilder.UseSqlServer(_connectionString);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -26,7 +26,7 @@ namespace MilitaryTask.Bindings
             Bind<IAuthService>().ToMethod(ctx => serviceProvider.GetRequiredService<IAuthService>());
 
             Bind<IBillingService>().To<BillingService>(); 
-            Bind<IOrderCostsRespository>().To<OrderCostsRepository>(); 
+            Bind<IBillingRespository>().To<BillingRepository>(); 
         }
     }
 }

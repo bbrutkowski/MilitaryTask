@@ -5,21 +5,21 @@ using DataContextAlias = MilitaryTask.DataContext.DataContext;
 
 namespace MilitaryTask.Repository
 {
-    internal class OrderCostsRepository : IOrderCostsRespository
+    internal class BillingRepository : IBillingRespository
     {
         private readonly DataContextAlias _dataContext;
         private const string EmptyDataError = "No data to save";
         private const string SavaDataError = "Error occured while saving data";
 
-        public OrderCostsRepository(DataContextAlias dataContext) => _dataContext = dataContext;
-
-        public async Task<Result> SaveOrderCostsAsync(List<Order> orders)
+        public BillingRepository(DataContextAlias dataContext) => _dataContext = dataContext;
+         
+        public async Task<Result> SaveBillingsAsync(BillingEntriesList billings)
         {
-            if (!orders.Any()) return Result.Failure(EmptyDataError);
+            if (billings is null) return Result.Failure(EmptyDataError);
 
             try
             {
-                await _dataContext.OrderTable.AddRangeAsync(orders);
+                await _dataContext.Billings.AddRangeAsync(billings.BillingEntries);
                 await _dataContext.SaveChangesAsync(cancellationToken: default);
 
                 return Result.Success();

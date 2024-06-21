@@ -9,52 +9,51 @@ namespace MilitaryTask.BussinesLogic
     internal class BillingService : IBillingService
     {
         private readonly IAuthService _fileService;
-        private readonly IOrderCostsRespository _orderCostsRespository;
+        private readonly IBillingRespository _orderCostsRespository;
 
         private readonly string _dataUrl = "https://api.allegro.pl/billing/billing-entries";
         private readonly string _authTokenUrl = "https://allegro.pl/auth/oauth/token";
         private readonly string _initialAuthUrl = "https://allegro.pl/auth/oauth/device";
 
-        public BillingService(IAuthService fileService, IOrderCostsRespository orderCostsRespository)
+        public BillingService(IAuthService fileService, IBillingRespository orderCostsRespository)
         {
             _fileService = fileService;
             _orderCostsRespository = orderCostsRespository;
         }
 
-        public async Task<Result<IReadOnlyCollection<BillingEntriesResponse>>> GetBillingListAsync()
+        public async Task<Result<BillingEntriesList>> GetBillingListAsync()
         {
             var downloadResult = await _fileService.DownloadDataAsync(_dataUrl, _authTokenUrl, _initialAuthUrl);
-            if (downloadResult.IsFailure) return Result.Failure<IReadOnlyCollection<BillingEntriesResponse>>(downloadResult.Error);
+            if (downloadResult.IsFailure) return Result.Failure<BillingEntriesList>(downloadResult.Error);
 
-            var billingEntries = await ConvertDataToBillingListAsync(downloadResult.Value);
+            var billingEntries = await ConvertDataToBillingEntriesListAsync(downloadResult.Value);
 
             return Result.Success(billingEntries.Value);
         }
 
-        public async Task<Result> SaveBillingsAsync(string data)
+        public async Task<Result> SaveBillingsAsync(BillingEntriesList billings)
         {
-            var costsList = new List<Order>();
-            //var rawData = await ConvertDataToOrderCostsListAsync(data);
+            if (billings is null) return Result.Failure("No billings to save");
 
-            var saveResult = await _orderCostsRespository.SaveOrderCostsAsync(costsList);
+            var saveResult = await _orderCostsRespository.SaveBillingsAsync(billings);
             if (saveResult.IsFailure) return Result.Failure("Error occured while saving data");
 
             return Result.Success();
         } 
 
-        private async Task<Result<IReadOnlyCollection<BillingEntriesResponse>>> ConvertDataToBillingListAsync(string data)
+        private async Task<Result<BillingEntriesList>> ConvertDataToBillingEntriesListAsync(string data)
         {
             try
             {
-                var orderCosts = JsonConvert.DeserializeObject<IReadOnlyCollection<BillingEntriesResponse>>(data) ?? new List<BillingEntriesResponse>();
-                if (!orderCosts.Any()) return Result.Failure<IReadOnlyCollection<BillingEntriesResponse>>("The billing list is empty");
+                var billingEntries = JsonConvert.DeserializeObject<BillingEntriesList>(data) ?? new BillingEntriesList();
+                if (billingEntries is null) return Result.Failure<BillingEntriesList>("The billing list is empty");
               
-                return Result.Success(orderCosts);
+                return Result.Success(billingEntries);
             }
             catch (Exception e)
             {
-                await Console.Out.WriteLineAsync($"Error occurred while deserializing the data. Method: {nameof(ConvertDataToBillingListAsync)}");
-                return Result.Failure<IReadOnlyCollection<BillingEntriesResponse>>(e.Message);
+                await Console.Out.WriteLineAsync($"Error occurred while deserializing data. Method: {nameof(ConvertDataToBillingEntriesListAsync)}");
+                return Result.Failure<BillingEntriesList>(e.Message);
             }
         }
     }
