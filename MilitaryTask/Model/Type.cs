@@ -2,7 +2,7 @@
 
 namespace MilitaryTask.Model
 {
-    public class Offer
+    public class Type
     {
         [JsonPropertyName("id")]
         public string Id { get; set; }

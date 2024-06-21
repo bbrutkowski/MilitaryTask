@@ -3,8 +3,8 @@ using MilitaryTask.Model;
 
 namespace MilitaryTask.Repository.Interfaces
 {
-    public interface IOrderCostsRespository
+    public interface IBillingRespository
     {
-        Task<Result> SaveOrderCostsAsync(List<Order> orders);
+        Task<Result> SaveBillingsAsync(BillingEntriesList billings);
     }
 }
