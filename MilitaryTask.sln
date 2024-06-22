@@ -3,7 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MilitaryTask", "MilitaryTask\MilitaryTask.csproj", "{8E6A3A01-D854-4388-8285-9462EFD4C5B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MilitaryTask", "MilitaryTask\MilitaryTask.csproj", "{8E6A3A01-D854-4388-8285-9462EFD4C5B3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application1", "Application1", "{C1D4AC23-3A47-48E2-B2F5-F61A3D41DDC7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application2", "Application2", "{C75A707D-A885-411F-87EB-AE7D80F39C21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MilitaryTask2", "MilitaryTask2\MilitaryTask2.csproj", "{2A62507A-4FE8-4CBF-A085-322B819458C8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +21,17 @@ Global
 		{8E6A3A01-D854-4388-8285-9462EFD4C5B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E6A3A01-D854-4388-8285-9462EFD4C5B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E6A3A01-D854-4388-8285-9462EFD4C5B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A62507A-4FE8-4CBF-A085-322B819458C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A62507A-4FE8-4CBF-A085-322B819458C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A62507A-4FE8-4CBF-A085-322B819458C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A62507A-4FE8-4CBF-A085-322B819458C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8E6A3A01-D854-4388-8285-9462EFD4C5B3} = {C1D4AC23-3A47-48E2-B2F5-F61A3D41DDC7}
+		{2A62507A-4FE8-4CBF-A085-322B819458C8} = {C75A707D-A885-411F-87EB-AE7D80F39C21}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8524752B-A15D-4020-BB2A-74858451CC2A}
