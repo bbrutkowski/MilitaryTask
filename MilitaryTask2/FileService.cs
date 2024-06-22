@@ -7,15 +7,19 @@ namespace MilitaryTask2
 {
     internal class FileService
     {
+        private readonly string _xmlFileType = "*.xml";
+        private readonly string _documentsFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
+
+        private string[] GetXmlFiles() => Directory.GetFiles(_documentsFolderPath, _xmlFileType);
+
         public Result ProcessXmlFiles()
         {
             var mainProducts = new ProductCatalog();
-            var folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
-            if (!Directory.Exists(folderPath)) return Result.Failure("Folder path does not exist");
+            if (!Directory.Exists(_documentsFolderPath)) return Result.Failure("Folder path does not exist");
 
             try
             {
-                var xmlFiles = Directory.GetFiles(folderPath, "*.xml");
+                var xmlFiles = GetXmlFiles();
                 if (!xmlFiles.Any()) return Result.Failure("No files downloaded");
 
                 foreach (var xmlFile in xmlFiles)
