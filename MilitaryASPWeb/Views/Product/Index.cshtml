@@ -1,0 +1,114 @@
+﻿@using MilitaryASPWeb.BussinessLogic.Model
+@model IEnumerable<Product>
+
+@{
+    ViewData["Title"] = "Produkt list";
+}
+
+<h2>Product list</h2>
+
+<table class="table" id="productList">
+    <tr id="header-row">
+        <th>Id</th>
+        <th>Photo</th>
+        <th>Description</th>
+        <th>Quantity</th>
+        <th>Favorite</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        var Id = item.Id.ToString();
+
+        <tr>
+            <td>
+                @Id
+            </td>
+            <td>
+                @if (!string.IsNullOrEmpty(item.Photo))
+                {
+                    <img src="@item.Photo" alt="Photo" style="width: 50px; height: 50px; object-fit: cover;" />
+                }
+                else
+                {
+                    <span>No picture</span>
+                }
+            </td>
+            <td>
+                @item.Description
+            </td>
+            <td>
+                @item.Quantity
+            </td>
+            <td>
+                <span class="heart-icon" style="cursor: pointer;"
+                      data-item-id="@item.Id"
+                      data-item-description="@item.Description"
+                      data-is-favorite="@item.IsFavorite.ToString().ToLower()">
+                    @if (item.IsFavorite)
+                    {
+                        <text>❤️</text>
+                    }
+                    else
+                    {
+                        <text>🤍</text>
+                    }
+                </span>
+            </td>
+        </tr>
+    }
+</table>
+
+<button id="saveFavoritesButton">Save</button>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('.heart-icon').forEach(function (element) {
+            element.addEventListener('click', function () {
+                var itemId = this.getAttribute('data-item-id'); 
+                var isFavorite = JSON.parse(this.getAttribute('data-is-favorite'));
+
+                isFavorite = !isFavorite;
+                this.setAttribute('data-is-favorite', isFavorite);
+
+                if (isFavorite) {
+                    this.innerHTML = '❤️';
+                } else {
+                    this.innerHTML = '🤍';
+                }
+            });
+        });
+
+        document.getElementById('saveFavoritesButton').addEventListener('click', function () {
+            var favoriteItems = [];
+            document.querySelectorAll('.heart-icon').forEach(function (element) {
+                var itemId = element.getAttribute('data-item-id');
+                var itemDescription = element.getAttribute('data-item-description'); 
+
+                var isFavorite = JSON.parse(element.getAttribute('data-is-favorite'));
+
+                if (isFavorite) {
+                    favoriteItems.push({ id: itemId, description: itemDescription });
+                }
+            });
+
+            fetch('@Url.Action("SaveFavorites", "Product")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(favoriteItems)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Items saved successfully!');
+                    } else {
+                        alert('An error occurred while saving items.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    });
+</script>
