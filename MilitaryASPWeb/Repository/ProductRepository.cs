@@ -19,11 +19,10 @@ namespace MilitaryASPWeb.Repository
                 await _context.SaveChangesAsync(token);
                 return Result.Success();
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                await Console.Out.WriteLineAsync($"An error occurred while saving items: {e.Message}" +
+                throw new ApplicationException($"An error occurred while saving items" +
                     $"Method: {nameof(SaveProductsAsync)}");
-                return Result.Failure($"{e.Message}");
             }
         }
     }

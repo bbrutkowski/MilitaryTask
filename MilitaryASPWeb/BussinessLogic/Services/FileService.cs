@@ -1,6 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
 using MilitaryASPWeb.BussinessLogic.Model;
-using MilitaryASPWeb.BussinessLogic.Services.Interfaces;
 using MilitaryASPWeb.Models.Model;
 using MilitaryASPWeb.Models.Model.Exceptions;
 using MilitaryASPWeb.Models.Services.Interfaces;
@@ -12,8 +11,6 @@ namespace MilitaryASPWeb.BussinessLogic.Services
     {
         private readonly string _xmlFileType = "*.xml";
         private readonly string _documentsFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
-
-        public FileService() { }
 
         private string[] GetXmlFiles() => Directory.GetFiles(_documentsFolderPath, _xmlFileType);
 
@@ -58,7 +55,6 @@ namespace MilitaryASPWeb.BussinessLogic.Services
             }
             catch (ProcessXmlFileException ex)
             {
-                Console.WriteLine(ex.Message);
                 return Result.Failure<ProductCatalog>(ex.Message);
             }
         }
@@ -80,7 +76,8 @@ namespace MilitaryASPWeb.BussinessLogic.Services
             }
             catch (Exception)
             {
-                throw new ProcessXmlFileException($"An error occurred while deserializing file in method {nameof(DeserializeInternationalProducts)}");      
+                throw new ProcessXmlFileException($"An error occurred while deserializing file in method" +
+                    $" {nameof(DeserializeInternationalProducts)}");      
             }
         }
 
@@ -101,7 +98,8 @@ namespace MilitaryASPWeb.BussinessLogic.Services
             }
             catch (Exception)
             {
-                throw new ProcessXmlFileException($"An error occurred while deserializing file in method {nameof(DeserializeSimpleProducts)}");
+                throw new ProcessXmlFileException($"An error occurred while deserializing file in method" +
+                    $" {nameof(DeserializeSimpleProducts)}");
             };
         }
 
@@ -119,7 +117,8 @@ namespace MilitaryASPWeb.BussinessLogic.Services
             }
             catch (Exception)
             {
-                throw new ProcessXmlFileException($"An error occurred while deserializing file in method {nameof(DeserializeProductDetails)}");
+                throw new ProcessXmlFileException($"An error occurred while deserializing file in method" +
+                    $" {nameof(DeserializeProductDetails)}");
             }
         }
 
@@ -137,7 +136,8 @@ namespace MilitaryASPWeb.BussinessLogic.Services
             }
             catch (Exception)
             {
-                throw new ProcessXmlFileException($"An error occurred while deserializing file in method {nameof(DeserializeOfferts)}");
+                throw new ProcessXmlFileException($"An error occurred while deserializing file in method" +
+                    $" {nameof(DeserializeOfferts)}");
             }
         }
     }

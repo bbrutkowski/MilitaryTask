@@ -32,10 +32,9 @@ namespace MilitaryTask.BussinesLogic
                 var content = await response.Content.ReadAsStringAsync();
                 return Result.Success(content);
             }
-            catch (Exception e)
+            catch (ApplicationException ex)
             {
-                await Console.Out.WriteLineAsync("Error occurred while downloading data"); 
-                return Result.Failure<string>(e.Message);
+                return Result.Failure<string>(ex.Message);
             }
         }
 
@@ -65,10 +64,9 @@ namespace MilitaryTask.BussinesLogic
 
                 return Result.Success(tokenResponse.AccessToken);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                await Console.Out.WriteLineAsync("Error occurred while obtaining the access token");
-                return Result.Failure<string>(e.Message);
+                throw new ApplicationException("Error occurred while obtaining the access token");
             }
         }
 
@@ -93,10 +91,9 @@ namespace MilitaryTask.BussinesLogic
 
                 return Result.Success(deviceCodeResult);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                await Console.Out.WriteLineAsync("Error occurred while receiving the device code");
-                return Result.Failure<DeviceCodeResponse>(e.Message);
+                throw new ApplicationException("Error occurred while receiving the device code");
             }
         }
     }

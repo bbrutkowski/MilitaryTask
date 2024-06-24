@@ -19,10 +19,10 @@ namespace MilitaryASPWeb.Controllers
         public async Task<IActionResult> Index()
         {
             var productCatalogResult = await _fileService.ProcessXmlFiles();
-            if (productCatalogResult.IsFailure) return BadRequest();
+            if (productCatalogResult.IsFailure) return BadRequest(productCatalogResult.Error);
 
             var createListResult = await _productService.CreateProductList(productCatalogResult.Value);
-            if (createListResult.IsFailure) return BadRequest();        
+            if (createListResult.IsFailure) return BadRequest(createListResult.Error);        
 
             return View(createListResult.Value);
         }
@@ -33,7 +33,7 @@ namespace MilitaryASPWeb.Controllers
             if (!favoriteItems.Any()) return BadRequest();
 
             var savingResult = await _productService.SaveFavoriteProductsAsync(favoriteItems, token);
-            if (savingResult.IsFailure) return BadRequest();
+            if (savingResult.IsFailure) return BadRequest(savingResult.Error);
 
             return Ok();
         }

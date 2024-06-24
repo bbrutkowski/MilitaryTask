@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions.ValueTasks;
 using MilitaryTask.BussinesLogic.Interfaces;
 using MilitaryTask.Model;
 using MilitaryTask.Repository.Interfaces;
@@ -23,22 +24,36 @@ namespace MilitaryTask.BussinesLogic
 
         public async Task<Result<BillingEntriesList>> GetBillingListAsync()
         {
-            var downloadResult = await _fileService.DownloadDataAsync(_dataUrl, _authTokenUrl, _initialAuthUrl);
-            if (downloadResult.IsFailure) return Result.Failure<BillingEntriesList>(downloadResult.Error);
+            try
+            {
+                var downloadResult = await _fileService.DownloadDataAsync(_dataUrl, _authTokenUrl, _initialAuthUrl);
+                if (downloadResult.IsFailure) return Result.Failure<BillingEntriesList>(downloadResult.Error);
 
-            var billingEntries = await ConvertDataToBillingEntriesListAsync(downloadResult.Value);
+                var billingEntries = await ConvertDataToBillingEntriesListAsync(downloadResult.Value);
 
-            return Result.Success(billingEntries.Value);
+                return Result.Success(billingEntries.Value);
+            }
+            catch (ApplicationException ex)
+            {
+                return Result.Failure<BillingEntriesList>(ex.Message);
+            }
         }
 
         public async Task<Result> SaveBillingsAsync(BillingEntriesList billings)
         {
-            if (billings is null) return Result.Failure("No billings to save");
+            try
+            {
+                if (billings is null) return Result.Failure("No billings to save");
 
-            var saveResult = await _orderCostsRespository.SaveBillingsAsync(billings);
-            if (saveResult.IsFailure) return Result.Failure("Error occured while saving data");
+                var saveResult = await _orderCostsRespository.SaveBillingsAsync(billings);
+                if (saveResult.IsFailure) return Result.Failure(saveResult.Error);
 
-            return Result.Success();
+                return Result.Success();
+            }
+            catch (ApplicationException ex)
+            {
+                return Result.Failure(ex.Message);
+            }
         } 
 
         private async Task<Result<BillingEntriesList>> ConvertDataToBillingEntriesListAsync(string data)
@@ -50,10 +65,10 @@ namespace MilitaryTask.BussinesLogic
               
                 return Result.Success(billingEntries);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                await Console.Out.WriteLineAsync($"Error occurred while deserializing data. Method: {nameof(ConvertDataToBillingEntriesListAsync)}");
-                return Result.Failure<BillingEntriesList>(e.Message);
+                throw new ApplicationException($"Error occurred while deserializing data." +
+                    $" Method: {nameof(ConvertDataToBillingEntriesListAsync)}");
             }
         }
     }
