@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions.ValueTasks;
 using MilitaryASPWeb.BussinessLogic.Model;
 using MilitaryASPWeb.BussinessLogic.Services.Interfaces;
 using MilitaryASPWeb.Models.Model;
@@ -44,7 +45,6 @@ namespace MilitaryASPWeb.BussinessLogic.Services
             }
             catch (ProductMappingException ex)
             {
-                await Console.Out.WriteLineAsync(ex.Message);
                 return Result.Failure<List<Product>>(ex.Message);
             }
         }
@@ -127,10 +127,15 @@ namespace MilitaryASPWeb.BussinessLogic.Services
 
         public async Task<Result> SaveFavoriteProductsAsync(List<FavoriteProduct> products, CancellationToken token)
         {
-            var savingResult = await _productRepository.SaveProductsAsync(products, token);
-            if (savingResult.IsFailure) return Result.Failure("An error occurred while saving products");
-
-            return Result.Success();
+            try
+            {
+                var savingResult = await _productRepository.SaveProductsAsync(products, token);
+                return Result.Success(savingResult);
+            }
+            catch (ApplicationException ex)
+            {
+                return Result.Failure(ex.Message);
+            }
         }
     }
 }

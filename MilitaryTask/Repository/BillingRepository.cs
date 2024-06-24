@@ -24,10 +24,9 @@ namespace MilitaryTask.Repository
 
                 return Result.Success();
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                await Console.Out.WriteLineAsync(SavaDataError);
-                return Result.Failure(e.Message);
+                throw new ApplicationException($"An error occurred while writing data to the database. Method: {nameof(SaveBillingsAsync)}");
             }                 
         }
     }
