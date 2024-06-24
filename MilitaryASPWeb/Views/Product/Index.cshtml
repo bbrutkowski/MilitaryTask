@@ -35,7 +35,14 @@
                 }
             </td>
             <td>
-                @item.Description
+                @if (!string.IsNullOrEmpty(item.Description))
+                {
+                    @item.Description                  
+                }
+                else
+                {
+                    <span>No product description</span>
+                }             
             </td>
             <td>
                 @item.Quantity

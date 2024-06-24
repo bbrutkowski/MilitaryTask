@@ -1,6 +1,9 @@
 ﻿using CSharpFunctionalExtensions;
 using MilitaryASPWeb.BussinessLogic.Model;
 using MilitaryASPWeb.BussinessLogic.Services.Interfaces;
+using MilitaryASPWeb.Models.Model;
+using MilitaryASPWeb.Models.Model.Exceptions;
+using MilitaryASPWeb.Models.Services.Interfaces;
 using System.Xml.Linq;
 
 namespace MilitaryASPWeb.BussinessLogic.Services
@@ -53,10 +56,10 @@ namespace MilitaryASPWeb.BussinessLogic.Services
 
                 return Result.Success(mainProducts);
             }
-            catch (Exception e)
+            catch (ProcessXmlFileException ex)
             {
-                Console.WriteLine("Error while processing files");
-                return Result.Failure<ProductCatalog>(e.Message);
+                Console.WriteLine(ex.Message);
+                return Result.Failure<ProductCatalog>(ex.Message);
             }
         }
 
@@ -67,34 +70,17 @@ namespace MilitaryASPWeb.BussinessLogic.Services
                 return doc.Descendants("produkt")
                     .Select(p => new InternationalProduct
                     {
-                        ID = (int)p.Element("id"),
-                        Name = (string)p.Element("nazwa"),
-                        NamePl = (string)p.Element("nazwa_pl"),
-                        NameEn = (string)p.Element("nazwa_en"),
-                        Description = (string)p.Element("dlugi_opis"),
-                        DescriptionPl = (string)p.Element("dlugi_opis_pl"),
-                        DescriptionEn = (string)p.Element("dlugi_opis_en"),
-                        Code = (string)p.Element("kod"),
-                        EAN = (string)p.Element("ean"),
-                        Status = (int)p.Element("status"),
-                        WholesalePrice = (decimal)p.Element("cena_zewnetrzna_hurt"),
-                        SuggestedRetailPrice = (decimal)p.Element("cena_sugerowana"),
-                        SupplierCode = (string)p.Element("kod_dostawcy"),
-                        VAT = (decimal)p.Element("vat"),
-                        Size = (string)p.Element("rozmiar"),
-                        Color = (string)p.Element("kolor"),
-                        Category = (string)p.Element("cat"),
-                        CategoryPl = (string)p.Element("cat_pl"),
-                        CategoryEn = (string)p.Element("cat_en"),
+                        Id = (int)p.Element("id"),
+                        Name = (string)p.Element("nazwa"),                      
+                        Description = (string)p.Element("dlugi_opis"),                     
+                        Status = (int)p.Element("status"),                      
                         Photo = p.Descendants("zdjecie").Select(z => (string)z.Attribute("url")).FirstOrDefault()
                     })
                     .ToList();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"An error occurred while deserializing the file: {ex.Message}." +
-                    $" Method: {nameof(DeserializeInternationalProducts)}");
-                return [];
+                throw new ProcessXmlFileException($"An error occurred while deserializing file in method {nameof(DeserializeInternationalProducts)}");      
             }
         }
 
@@ -105,35 +91,17 @@ namespace MilitaryASPWeb.BussinessLogic.Services
                 return doc.Descendants("product")
                     .Select(sp => new SimpleProduct
                     {
-                        EAN = (string)sp.Element("ean"),
-                        ID = (int)sp.Element("id"),
-                        SKU = (string)sp.Element("sku"),
+                        Id = (int)sp.Element("id"),                      
                         Name = (string)sp.Element("name"),
-                        Description = (string)sp.Element("desc"),
-                        URL = (string)sp.Element("url"),
-                        Categories = sp.Descendants("category")
-                           .Select(c => new Category
-                           {
-                               Id = (string)c.Attribute("id"),
-                               Description = (string)c
-                           })
-                           .ToList(),
-                        Unit = (string)sp.Element("unit"),
-                        Weight = (string)sp.Element("weight"),
-                        PKWiU = (string)sp.Element("PKWiU"),
-                        InStock = (bool)sp.Element("inStock"),
-                        Quantity = (int)sp.Element("qty"),
-                        PriceAfterDiscountNet = (string)sp.Element("priceAfterDiscountNet"),
-                        RetailPriceGross = (decimal)sp.Element("retailPriceGross"),
+                        Description = (string)sp.Element("desc"),                      
+                        Quantity = (int)sp.Element("qty"),                 
                         Photo = sp.Descendants("photo").Select(x => (string)x).FirstOrDefault()
                     })
                     .ToList();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"An error occurred while deserializing the file: {ex.Message}." +
-                    $"Method: {nameof(DeserializeSimpleProducts)}");
-                return [];
+                throw new ProcessXmlFileException($"An error occurred while deserializing file in method {nameof(DeserializeSimpleProducts)}");
             };
         }
 
@@ -143,20 +111,15 @@ namespace MilitaryASPWeb.BussinessLogic.Services
             {
                 return doc.Descendants("product")
                     .Select(pd => new ProductDetails
-                    {
-                        EAN = (string)pd.Element("ean"),
-                        ID = (int)pd.Element("id"),
-                        SKU = (string)pd.Element("sku"),
-                        InStock = (bool)pd.Element("inStock"),
+                    {                      
+                        Id = (int)pd.Element("id"),                     
                         Quantity = (int)pd.Element("qty")
                     })
                     .ToList();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"An error occurred while deserializing the file {ex.Message}." +
-                    $" Method: {nameof(DeserializeProductDetails)}");
-                return [];
+                throw new ProcessXmlFileException($"An error occurred while deserializing file in method {nameof(DeserializeProductDetails)}");
             }
         }
 
@@ -167,27 +130,14 @@ namespace MilitaryASPWeb.BussinessLogic.Services
                 return doc.Descendants("product")
                     .Select(o => new Offer
                     {
-                        Id = (int)o.Attribute("id"),
-                        PriceGross = (decimal)o.Element("price").Attribute("gross"),
-                        PriceNet = (decimal)o.Element("price").Attribute("net"),
-                        Vat = (decimal)o.Element("price").Attribute("vat"),
-                        SRPGross = (decimal)o.Element("srp").Attribute("gross"),
-                        SRPNet = (decimal)o.Element("srp").Attribute("net"),
-                        SRPVat = (decimal)o.Element("srp").Attribute("vat"),
-                        SizeId = (int)o.Descendants("sizes").FirstOrDefault().Element("size").Attribute("id"),
-                        SizeCodeProducer = (string)o.Descendants("sizes").FirstOrDefault().Element("size").Attribute("code_producer"),
-                        SizeCode = (string)o.Descendants("sizes").FirstOrDefault().Element("size").Attribute("code"),
-                        Weight = (int)o.Descendants("sizes").FirstOrDefault().Element("size").Attribute("weight"),
-                        StockId = (int)o.Descendants("stock").FirstOrDefault().Attribute("id"),
+                        Id = (int)o.Attribute("id"),                       
                         StockQuantity = (int)o.Descendants("stock").FirstOrDefault().Attribute("quantity")
                     })
                     .ToList();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"An error occurred while deserializing the file {ex.Message}." +
-                    $" Method: {nameof(DeserializeOfferts)}");
-                return [];
+                throw new ProcessXmlFileException($"An error occurred while deserializing file in method {nameof(DeserializeOfferts)}");
             }
         }
     }

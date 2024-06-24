@@ -1,4 +1,6 @@
-﻿namespace MilitaryASPWeb.BussinessLogic.Model
+﻿using MilitaryASPWeb.BussinessLogic.Model;
+
+namespace MilitaryASPWeb.Models.Model
 {
     public class ProductCatalog
     {

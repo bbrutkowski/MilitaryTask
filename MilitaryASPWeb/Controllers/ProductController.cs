@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MilitaryASPWeb.BussinessLogic.Model;
 using MilitaryASPWeb.BussinessLogic.Services.Interfaces;
+using MilitaryASPWeb.Models.Services.Interfaces;
 
 namespace MilitaryASPWeb.Controllers
 {
@@ -17,21 +18,24 @@ namespace MilitaryASPWeb.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var productCatalog = await _fileService.ProcessXmlFiles();
-            var products = await _productService.CreateProductList(productCatalog.Value);
+            var productCatalogResult = await _fileService.ProcessXmlFiles();
+            if (productCatalogResult.IsFailure) return BadRequest();
 
-            return View(products.Value);
+            var createListResult = await _productService.CreateProductList(productCatalogResult.Value);
+            if (createListResult.IsFailure) return BadRequest();        
+
+            return View(createListResult.Value);
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveFavorites([FromBody] List<FavoriteProduct> favoriteItems, CancellationToken token)
+        public async Task<IActionResult> SaveFavoritesAsync([FromBody] List<FavoriteProduct> favoriteItems, CancellationToken token)
         {
             if (!favoriteItems.Any()) return BadRequest();
 
-            var result = await _productService.SaveFavoriteProducts(favoriteItems, token);
-            if (result.IsSuccess) return Ok();
+            var savingResult = await _productService.SaveFavoriteProductsAsync(favoriteItems, token);
+            if (savingResult.IsFailure) return BadRequest();
 
-            return BadRequest();
+            return Ok();
         }
     }
 }

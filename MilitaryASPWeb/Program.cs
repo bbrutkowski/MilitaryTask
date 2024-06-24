@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MilitaryASPWeb.BussinessLogic.DataContext;
 using MilitaryASPWeb.BussinessLogic.Services;
 using MilitaryASPWeb.BussinessLogic.Services.Interfaces;
+using MilitaryASPWeb.Models.Services.Interfaces;
 using MilitaryASPWeb.Repository;
 using MilitaryASPWeb.Repository.Interface;
 

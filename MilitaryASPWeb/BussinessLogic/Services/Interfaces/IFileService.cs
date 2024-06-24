@@ -1,7 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
-using MilitaryASPWeb.BussinessLogic.Model;
+using MilitaryASPWeb.Models.Model;
 
-namespace MilitaryASPWeb.BussinessLogic.Services.Interfaces
+namespace MilitaryASPWeb.Models.Services.Interfaces
 {
     public interface IFileService
     {

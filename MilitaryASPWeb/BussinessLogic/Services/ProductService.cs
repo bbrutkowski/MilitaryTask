@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using MilitaryASPWeb.BussinessLogic.Model;
 using MilitaryASPWeb.BussinessLogic.Services.Interfaces;
+using MilitaryASPWeb.Models.Model;
 using MilitaryASPWeb.Repository.Interface;
 
 namespace MilitaryASPWeb.BussinessLogic.Services
@@ -17,27 +18,35 @@ namespace MilitaryASPWeb.BussinessLogic.Services
 
             var products = new List<Product>();
 
-            foreach (var offer in productCatalog.Offerts)
+            try
             {
-                products.Add(MapOfferToProduct(offer));
-            }
+                foreach (var offer in productCatalog.Offerts)
+                {
+                    products.Add(MapOfferToProduct(offer));
+                }
 
-            foreach (var productDetail in productCatalog.ProductDetails)
+                foreach (var productDetail in productCatalog.ProductDetails)
+                {
+                    products.Add(MapProductDetailsToProduct(productDetail));
+                }
+
+                foreach (var simpleProductOffer in productCatalog.SimpleProductOfferts)
+                {
+                    products.Add(MapSimpleProductOfferToProduct(simpleProductOffer));
+                }
+
+                foreach (var internationalProduct in productCatalog.InternationatProducts)
+                {
+                    products.Add(MapInternationalProductToProduct(internationalProduct));
+                }
+
+                return Result.Success(products);
+            }
+            catch (ProductMappingException ex)
             {
-                products.Add(MapProductDetailsToProduct(productDetail));
+                await Console.Out.WriteLineAsync(ex.Message);
+                return Result.Failure<List<Product>>(ex.Message);
             }
-
-            foreach (var simpleProductOffer in productCatalog.SimpleProductOfferts)
-            {
-                products.Add(MapSimpleProductOfferToProduct(simpleProductOffer));
-            }
-
-            foreach (var internationalProduct in productCatalog.InternationatProducts)
-            {
-                products.Add(MapInternationalProductToProduct(internationalProduct));
-            }
-
-            return Result.Success(products);
         }
 
         private Product MapInternationalProductToProduct(InternationalProduct internationalProduct)
@@ -46,17 +55,16 @@ namespace MilitaryASPWeb.BussinessLogic.Services
             {
                 return new Product()
                 {
-                    Id = internationalProduct.ID,
+                    Id = internationalProduct.Id,
                     Description = internationalProduct.Description,
                     Quantity = default,
                     Photo = internationalProduct.Photo
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine($"An error occurred during mapping: {e.Message}" +
-                    $"Method: {nameof(MapInternationalProductToProduct)}");
-                return new();
+                throw new ProductMappingException("An error occurred during mapping." +
+                    $"Method: {nameof(MapInternationalProductToProduct)}");              
             }
         }
 
@@ -66,17 +74,16 @@ namespace MilitaryASPWeb.BussinessLogic.Services
             {
                 return new Product()
                 {
-                    Id = simpleProductOffer.ID,
+                    Id = simpleProductOffer.Id,
                     Description = simpleProductOffer.Description,
                     Quantity = simpleProductOffer.Quantity,
                     Photo = simpleProductOffer.Photo
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine($"An error occurred during mapping: {e.Message}" +
+                throw new ProductMappingException("An error occurred during mapping." +
                     $"Method: {nameof(MapSimpleProductOfferToProduct)}");
-                return new();
             }
         }
 
@@ -86,17 +93,16 @@ namespace MilitaryASPWeb.BussinessLogic.Services
             {
                 return new Product()
                 {
-                    Id = productDetail.ID,
+                    Id = productDetail.Id,
                     Description = string.Empty,
                     Quantity = productDetail.Quantity,
                     Photo = string.Empty
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine($"An error occurred during mapping: {e.Message}" +
-                    $"Method: {nameof(MapProductDetailsToProduct)}");
-                return new();
+                throw new ProductMappingException("An error occurred during mapping." +
+                   $"Method: {nameof(MapProductDetailsToProduct)}");
             }
         }
 
@@ -112,17 +118,19 @@ namespace MilitaryASPWeb.BussinessLogic.Services
                     Photo = string.Empty
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine($"An error occurred during mapping: {e.Message}" +
+                throw new ProductMappingException("An error occurred during mapping." +
                     $"Method: {nameof(MapOfferToProduct)}");
-                return new();
             }
         }
 
-        public async Task<Result> SaveFavoriteProducts(List<FavoriteProduct> products, CancellationToken token)
+        public async Task<Result> SaveFavoriteProductsAsync(List<FavoriteProduct> products, CancellationToken token)
         {
-            return Result.Success(await _productRepository.SaveProductsAsync(products, token));
+            var savingResult = await _productRepository.SaveProductsAsync(products, token);
+            if (savingResult.IsFailure) return Result.Failure("An error occurred while saving products");
+
+            return Result.Success();
         }
     }
 }

@@ -1,10 +1,5 @@
 ﻿namespace MilitaryASPWeb.BussinessLogic.Model
-{
-    public class MainProduct
-    {
-        public List<Product> Products { get; set; }
-    }
-
+{ 
     public class Product
     {
         public int Id { get; set; }
