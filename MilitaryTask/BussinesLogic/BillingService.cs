@@ -1,41 +1,37 @@
 ﻿using CSharpFunctionalExtensions;
-using CSharpFunctionalExtensions.ValueTasks;
 using MilitaryTask.BussinesLogic.Interfaces;
 using MilitaryTask.Model;
-using MilitaryTask.Repository.Interfaces;
 using Newtonsoft.Json;
 
 namespace MilitaryTask.BussinesLogic
 {
     internal class BillingService : IBillingService
     {
-        private readonly IAuthService _fileService;
-        private readonly IBillingRespository _orderCostsRespository;
+        private readonly IHttpService _httpService;
 
-        private readonly string _dataUrl = "https://api.allegro.pl/billing/billing-entries";
-        private readonly string _authTokenUrl = "https://allegro.pl/auth/oauth/token";
-        private readonly string _initialAuthUrl = "https://allegro.pl/auth/oauth/device";
+        private readonly string _billingUrl = "https://api.allegro.pl/billing/billing-entries";
+        private readonly string _orderIdParamName = "order.id";
 
-        public BillingService(IAuthService fileService, IBillingRespository orderCostsRespository)
+        public BillingService(IHttpService httpService)
         {
-            _fileService = fileService;
-            _orderCostsRespository = orderCostsRespository;
+            _httpService = httpService;
         }
 
-        public async Task<Result<BillingEntriesList>> GetBillingListAsync()
+        public async Task<Result<string>> GetBillingDetailsByOrderIdAsync(string orderId, string authToken)
         {
+
             try
             {
-                var downloadResult = await _fileService.DownloadDataAsync(_dataUrl, _authTokenUrl, _initialAuthUrl);
-                if (downloadResult.IsFailure) return Result.Failure<BillingEntriesList>(downloadResult.Error);
+                var requestBuildResult = _httpService.CreateGetRequestWithParams(_billingUrl, _orderIdParamName, orderId);
+                if (requestBuildResult.IsFailure) return Result.Failure<string>(requestBuildResult.Error);
 
-                var billingEntries = await ConvertDataToBillingEntriesListAsync(downloadResult.Value);
+                var result = await _httpService.SendGetRequestWithBearerToken(requestBuildResult.Value, authToken);
 
-                return Result.Success(billingEntries.Value);
+                return Result.Success(result.Value);
             }
-            catch (ApplicationException ex)
+            catch (HttpRequestException ex)
             {
-                return Result.Failure<BillingEntriesList>(ex.Message);
+                return Result.Failure<string>(ex.Message);
             }
         }
 
@@ -43,10 +39,10 @@ namespace MilitaryTask.BussinesLogic
         {
             try
             {
-                if (billings is null) return Result.Failure("No billings to save");
+                //if (billings is null) return Result.Failure("No billings to save");
 
-                var saveResult = await _orderCostsRespository.SaveBillingsAsync(billings);
-                if (saveResult.IsFailure) return Result.Failure(saveResult.Error);
+                //var saveResult = await _orderCostsRespository.SaveBillingsAsync(billings.BillingEntries);
+                //if (saveResult.IsFailure) return Result.Failure(saveResult.Error);
 
                 return Result.Success();
             }
@@ -56,7 +52,7 @@ namespace MilitaryTask.BussinesLogic
             }
         } 
 
-        private async Task<Result<BillingEntriesList>> ConvertDataToBillingEntriesListAsync(string data)
+        public async Task<Result<BillingEntriesList>> DeserializeFilesToBillingEntryListAsync(string data)
         {
             try
             {
@@ -68,7 +64,7 @@ namespace MilitaryTask.BussinesLogic
             catch (Exception)
             {
                 throw new ApplicationException($"Error occurred while deserializing data." +
-                    $" Method: {nameof(ConvertDataToBillingEntriesListAsync)}");
+                    $" Method: {nameof(DeserializeFilesToBillingEntryListAsync)}");
             }
         }
     }

@@ -13,13 +13,13 @@ namespace MilitaryTask.Repository
 
         public BillingRepository(DataContextAlias dataContext) => _dataContext = dataContext;
          
-        public async Task<Result> SaveBillingsAsync(BillingEntriesList billings)
+        public async Task<Result> SaveBillingsAsync(IReadOnlyCollection<BillingEntry> billings)
         {
             if (billings is null) return Result.Failure(EmptyDataError);
 
             try
             {
-                await _dataContext.Billings.AddRangeAsync(billings.BillingEntries);
+                //await _dataContext.BillingEntries.AddRangeAsync(billings);
                 await _dataContext.SaveChangesAsync(cancellationToken: default);
 
                 return Result.Success();

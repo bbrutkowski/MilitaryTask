@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions.ValueTasks;
 using MilitaryTask.BussinesLogic.Interfaces;
 using MilitaryTask.Model.Auth;
 using Newtonsoft.Json;
@@ -10,27 +11,28 @@ namespace MilitaryTask.BussinesLogic
 {
     internal class AuthService : IAuthService
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpService _httpService;
 
         private const string ClientId = "f758033d9f0e4c339ad56670d86b5fef";
         private const string ClientSecret = "IMaXLIKaisnPxgWJhARMnK90bvuXqHCcXKKwkiTyXj0dgdBpqceIlMW4eXnKh3Pi";
+        private const string _authTokenUrl = "https://allegro.pl/auth/oauth/token";
+        private const string _initialAuthUrl = "https://allegro.pl/auth/oauth/device";
 
-        public AuthService(IHttpClientFactory httpClientFactory) => _httpClientFactory = httpClientFactory;
+        public AuthService(IHttpService httpService) => _httpService = httpService;
 
-        public async Task<Result<string>> DownloadDataAsync(string url, string authTokenUrl, string initialAuthUrl)
+        public async Task<Result<string>> GetAuthAsync()
         {
-            var httpClient = _httpClientFactory.CreateClient();
-
             try
             {
-                var authToken = await GetAuthTokenAsync(authTokenUrl, initialAuthUrl, httpClient);
+                var authTokenResult = await GetAuthTokenAsync(_authTokenUrl, _initialAuthUrl);
+                if (authTokenResult.IsFailure) return Result.Failure<string>(authTokenResult.Error); 
 
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken.Value);
-                var response = await httpClient.GetAsync(url);
-                if (!response.IsSuccessStatusCode) return Result.Failure<string>("Error ocurred while downloading data");
+                //httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authTokenResult.Value);
+                //var response = await httpClient.GetAsync(url);
+                //if (!response.IsSuccessStatusCode) return Result.Failure<string>("Error ocurred while downloading data");
 
-                var content = await response.Content.ReadAsStringAsync();
-                return Result.Success(content);
+                //var content = await response.Content.ReadAsStringAsync();
+                return Result.Success(authTokenResult.Value);
             }
             catch (ApplicationException ex)
             {
@@ -38,11 +40,11 @@ namespace MilitaryTask.BussinesLogic
             }
         }
 
-        public async Task<Result<string>> GetAuthTokenAsync(string tokenUrl, string initialAuthUrl, HttpClient httpClient)
+        public async Task<Result<string>> GetAuthTokenAsync(string tokenUrl, string initialAuthUrl)
         {
             try
             {
-                var deviceCode = await GetInitialDeviceCodeAsync(initialAuthUrl, httpClient);
+                var deviceCode = await GetInitialDeviceCodeAsync(initialAuthUrl);
                 var request = new HttpRequestMessage(HttpMethod.Post, tokenUrl)
                 {
                     Content = new FormUrlEncodedContent(new Dictionary<string, string>
@@ -55,11 +57,10 @@ namespace MilitaryTask.BussinesLogic
                 var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ClientId}:{ClientSecret}"));
                 request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
-                var response = await httpClient.SendAsync(request);
-                if (!response.IsSuccessStatusCode) return Result.Failure<string>("Access token not received");
+                var response = await _httpService.SendGetRequest(request);
+                if (response.IsFailure) return Result.Failure<string>("Access token not received");
 
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(responseContent);
+                var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(response.Value);
                 if (tokenResponse is null) return Result.Failure<string>("Error deserializing access token");
 
                 return Result.Success(tokenResponse.AccessToken);
@@ -70,7 +71,7 @@ namespace MilitaryTask.BussinesLogic
             }
         }
 
-        private async Task<Result<DeviceCodeResponse>> GetInitialDeviceCodeAsync(string initialAuthUrl, HttpClient httpClient)
+        private async Task<Result<DeviceCodeResponse>> GetInitialDeviceCodeAsync(string initialAuthUrl)
         {
             try
             {
@@ -82,11 +83,10 @@ namespace MilitaryTask.BussinesLogic
 
                 request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
-                var response = await httpClient.SendAsync(request);
-                if (!response.IsSuccessStatusCode) return Result.Failure<DeviceCodeResponse>("Device number not received");
+                var response = await _httpService.SendGetRequest(request);
+                if (response.IsFailure) return Result.Failure<DeviceCodeResponse>("Device number not received");
 
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var deviceCodeResult = JsonConvert.DeserializeObject<DeviceCodeResponse>(responseContent);
+                var deviceCodeResult = JsonConvert.DeserializeObject<DeviceCodeResponse>(response.Value);
                 if (deviceCodeResult is null) return Result.Failure<DeviceCodeResponse>("Error deserializing device code");
 
                 return Result.Success(deviceCodeResult);

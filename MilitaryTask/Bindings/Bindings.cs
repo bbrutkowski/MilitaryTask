@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MilitaryTask.BussinesLogic;
 using MilitaryTask.BussinesLogic.Interfaces;
 using MilitaryTask.Repository;
 using MilitaryTask.Repository.Interfaces;
 using Ninject.Modules;
+using System.Net.Http;
+using static CSharpFunctionalExtensions.Result;
 using DataContextAlias = MilitaryTask.DataContext.DataContext;
 
 namespace MilitaryTask.Bindings
@@ -17,16 +18,29 @@ namespace MilitaryTask.Bindings
             var services = new ServiceCollection();
             services.AddHttpClient();
 
-            services.AddTransient<IAuthService, AuthService>();
-
             var serviceProvider = services.BuildServiceProvider();
-            Bind<IServiceProvider>().ToConstant(serviceProvider);
 
-            Bind<IHttpClientFactory>().ToMethod(ctx => serviceProvider.GetRequiredService<IHttpClientFactory>());
-            Bind<IAuthService>().ToMethod(ctx => serviceProvider.GetRequiredService<IAuthService>());
+            var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
 
-            Bind<IBillingService>().To<BillingService>(); 
-            Bind<IBillingRespository>().To<BillingRepository>(); 
+            Bind<IHttpClientFactory>().ToConstant(httpClientFactory);
+
+            Bind<IHttpService>().To<HttpService>();
+
+            Bind<IAuthService>().To<AuthService>();
+
+            Bind<IBillingService>().To<BillingService>();
+            Bind<IBillingRespository>().To<BillingRepository>();
+
+            Bind<IOrderService>().To<OrderService>();
+            Bind<IOrderRepository>().To<OrderRepository>();
+
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .Build();
+
+            Bind<IConfiguration>().ToConstant(configuration);
+            Bind<DataContextAlias>().ToSelf().WithConstructorArgument("configuration", configuration);
         }
     }
 }

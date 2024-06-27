@@ -1,41 +1,54 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CSharpFunctionalExtensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using MilitaryTask.Model;
 
 namespace MilitaryTask.DataContext
 {
     public class DataContext : DbContext
     {
-        private const string _connectionString = "Data Source=.;Initial Catalog=MilitaryDB;Integrated Security=True;TrustServerCertificate=True;";
+        private readonly IConfiguration _configuration;
 
-        public DbSet<Order> OrderTable { get; set; }
-        public DbSet<BillingEntry> Billings { get; set; }
-        public DbSet<Model.Type> BillingTypes { get; set; }
-        public DbSet<Offer> Offers { get; set; }
-        public DbSet<Tax> Taxes { get; set; }
-        public DbSet<Amount> Values { get; set; }
-        public DbSet<Balance> Balances { get; set; }
-        
+        public DataContext(IConfiguration configuration) => _configuration = configuration;
+
+        public DbSet<Order> Orders { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(_connectionString);
+            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DbConnection"));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Order>(x =>
             {
-                x.ToTable("OrderTable");
+                x.ToTable("OrderTable", "dbo");
 
-                x.HasKey(y => y.Id);
+                x.HasKey(e => e.Id)
+                 .HasName("PK_panel_lista");
 
-                x.Property(y => y.OrderId)
+                x.Property(e => e.Id)
+                 .ValueGeneratedOnAdd();
+
+                x.Property(e => e.OrderId)
                  .IsRequired()
                  .HasMaxLength(45);
 
-                x.Property(y => y.ErpOrderId).IsRequired(false);
-                x.Property(y => y.InvoiceId).IsRequired(false);
-                x.Property(y => y.StoreId).IsRequired(false);                       
-            }); 
+                x.Property(e => e.ErpOrderId)
+                 .IsRequired(false);
+
+                x.Property(e => e.InvoiceId)
+                 .IsRequired(false);
+
+                x.Property(e => e.StoreId)
+                 .IsRequired(false);
+
+                x.HasIndex(e => new { e.OrderId, e.StoreId })
+                 .IsUnique()
+                 .HasDatabaseName("si");
+            });
+
+            base.OnModelCreating(modelBuilder);
         }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
