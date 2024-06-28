@@ -2,8 +2,8 @@
 
 namespace MilitaryTask.BussinesLogic.Interfaces
 {
-    public interface IOrderService
+    public interface IOfferService
     {
-        Task<Result<string>> GetOrderIdAsync();
+        Task<Result<string>> GetOfferIdAsync();
     }
 }

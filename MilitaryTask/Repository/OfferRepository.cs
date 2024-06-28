@@ -5,14 +5,14 @@ using DataContextAlias = MilitaryTask.DataContext.DataContext;
 
 namespace MilitaryTask.Repository
 {
-    public class OrderRepository(DataContextAlias dataContext) : IOrderRepository
+    public class OfferRepository(DataContextAlias dataContext) : IOfferRepository
     {
         private readonly DataContextAlias _dataContext = dataContext;
 
-        public async Task<Result<string>> GetOrderIdAsync()
+        public async Task<Result<string>> GetOfferIdAsync()
         {
             var random = new Random();
-            var randomNumber = random.Next(1, 6);
+            var randomNumber = random.Next(1, 3);
 
             try
             {

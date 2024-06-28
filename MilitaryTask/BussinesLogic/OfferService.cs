@@ -4,17 +4,17 @@ using MilitaryTask.Repository.Interfaces;
 
 namespace MilitaryTask.BussinesLogic
 {
-    public class OrderService : IOrderService
+    public class OfferService : IOfferService
     {
-        private readonly IOrderRepository _orderRepository;
+        private readonly IOfferRepository _offerRepository;
 
-        public OrderService(IOrderRepository orderRepository) => _orderRepository = orderRepository;
+        public OfferService(IOfferRepository offerRepository) => _offerRepository = offerRepository;
 
-        public async Task<Result<string>> GetOrderIdAsync()
+        public async Task<Result<string>> GetOfferIdAsync()
         {
             try
             {
-                var orderId = await _orderRepository.GetOrderIdAsync();
+                var orderId = await _offerRepository.GetOfferIdAsync();
                 return Result.Success(orderId.Value);
             }
             catch (ApplicationException ex)

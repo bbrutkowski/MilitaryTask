@@ -1,6 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
 using MilitaryTask.BussinesLogic.Interfaces;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Web;
 
@@ -22,7 +21,7 @@ namespace MilitaryTask.BussinesLogic
 
                 var response = await client.SendAsync(request);
                 var content = await response.Content.ReadAsStringAsync();
-                if (string.IsNullOrEmpty(content)) return Result.Failure<string>(content);
+
                 return Result.Success(content);
             }
             catch (Exception)

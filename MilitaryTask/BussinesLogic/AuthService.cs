@@ -1,5 +1,4 @@
 ﻿using CSharpFunctionalExtensions;
-using CSharpFunctionalExtensions.ValueTasks;
 using MilitaryTask.BussinesLogic.Interfaces;
 using MilitaryTask.Model.Auth;
 using Newtonsoft.Json;
@@ -13,8 +12,8 @@ namespace MilitaryTask.BussinesLogic
     {
         private readonly IHttpService _httpService;
 
-        private const string ClientId = "f758033d9f0e4c339ad56670d86b5fef";
-        private const string ClientSecret = "IMaXLIKaisnPxgWJhARMnK90bvuXqHCcXKKwkiTyXj0dgdBpqceIlMW4eXnKh3Pi";
+        private const string _clientId = "f758033d9f0e4c339ad56670d86b5fef";
+        private const string _clientSecret = "IMaXLIKaisnPxgWJhARMnK90bvuXqHCcXKKwkiTyXj0dgdBpqceIlMW4eXnKh3Pi";
         private const string _authTokenUrl = "https://allegro.pl/auth/oauth/token";
         private const string _initialAuthUrl = "https://allegro.pl/auth/oauth/device";
 
@@ -24,14 +23,10 @@ namespace MilitaryTask.BussinesLogic
         {
             try
             {
-                var authTokenResult = await GetAuthTokenAsync(_authTokenUrl, _initialAuthUrl);
-                if (authTokenResult.IsFailure) return Result.Failure<string>(authTokenResult.Error); 
+                var deviceCodeResult = await GetInitialDeviceCodeAsync(_initialAuthUrl);
+                if (deviceCodeResult.IsFailure) return Result.Failure<string>(deviceCodeResult.Error);
 
-                //httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authTokenResult.Value);
-                //var response = await httpClient.GetAsync(url);
-                //if (!response.IsSuccessStatusCode) return Result.Failure<string>("Error ocurred while downloading data");
-
-                //var content = await response.Content.ReadAsStringAsync();
+                var authTokenResult = await GetAuthTokenAsync(deviceCodeResult.Value.DeviceCode);               
                 return Result.Success(authTokenResult.Value);
             }
             catch (ApplicationException ex)
@@ -40,21 +35,20 @@ namespace MilitaryTask.BussinesLogic
             }
         }
 
-        public async Task<Result<string>> GetAuthTokenAsync(string tokenUrl, string initialAuthUrl)
+        public async Task<Result<string>> GetAuthTokenAsync(string deviceCode)
         {
             try
             {
-                var deviceCode = await GetInitialDeviceCodeAsync(initialAuthUrl);
-                var request = new HttpRequestMessage(HttpMethod.Post, tokenUrl)
+                var request = new HttpRequestMessage(HttpMethod.Post, _authTokenUrl)
                 {
                     Content = new FormUrlEncodedContent(new Dictionary<string, string>
                     {
                         { "grant_type", "urn:ietf:params:oauth:grant-type:device_code" },
-                        { "device_code", deviceCode.Value.DeviceCode }
+                        { "device_code", deviceCode }
                     }),
                 };
 
-                var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ClientId}:{ClientSecret}"));
+                var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_clientId}:{_clientSecret}"));
                 request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
                 var response = await _httpService.SendGetRequest(request);
@@ -75,10 +69,10 @@ namespace MilitaryTask.BussinesLogic
         {
             try
             {
-                var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ClientId}:{ClientSecret}"));
+                var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_clientId}:{_clientSecret}"));
                 var request = new HttpRequestMessage(HttpMethod.Post, initialAuthUrl)
                 {
-                    Content = new StringContent($"client_id={ClientId}", Encoding.UTF8, "application/x-www-form-urlencoded"),
+                    Content = new StringContent($"client_id={_clientId}", Encoding.UTF8, "application/x-www-form-urlencoded"),
                 };
 
                 request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
