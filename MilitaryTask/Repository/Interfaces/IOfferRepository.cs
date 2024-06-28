@@ -2,8 +2,8 @@
 
 namespace MilitaryTask.Repository.Interfaces
 {
-    public interface IOrderRepository
+    public interface IOfferRepository
     {
-        Task<Result<string>> GetOrderIdAsync();
+        Task<Result<string>> GetOfferIdAsync();
     }
 }

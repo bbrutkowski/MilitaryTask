@@ -2,7 +2,7 @@
 
 namespace MilitaryTask.Model
 {
-    public class BillingEntry
+    public class BillingEntry 
     {
         [JsonPropertyName("id")]
         public string Id { get; set; }
@@ -72,6 +72,6 @@ namespace MilitaryTask.Model
     public class BillingEntriesList
     {
         [JsonPropertyName("billingEntries")]
-        public IReadOnlyCollection<BillingEntry> BillingEntries { get; set; }
+        public List<BillingEntry> BillingEntries { get; set; }
     }
 }

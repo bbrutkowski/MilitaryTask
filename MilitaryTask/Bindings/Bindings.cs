@@ -31,8 +31,8 @@ namespace MilitaryTask.Bindings
             Bind<IBillingService>().To<BillingService>();
             Bind<IBillingRespository>().To<BillingRepository>();
 
-            Bind<IOrderService>().To<OrderService>();
-            Bind<IOrderRepository>().To<OrderRepository>();
+            Bind<IOfferService>().To<OfferService>();
+            Bind<IOfferRepository>().To<OfferRepository>();
 
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)

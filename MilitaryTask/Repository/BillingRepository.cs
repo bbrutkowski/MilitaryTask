@@ -13,20 +13,23 @@ namespace MilitaryTask.Repository
 
         public BillingRepository(DataContextAlias dataContext) => _dataContext = dataContext;
          
-        public async Task<Result> SaveBillingsAsync(IReadOnlyCollection<BillingEntry> billings)
+        public async Task<Result> SaveSortedBillsAsync(List<Bill> bills)
         {
-            if (billings is null) return Result.Failure(EmptyDataError);
+            if (!bills.Any()) return Result.Failure("No bills to save");
 
+            var sortedBills = bills.OrderBy(x => x.BillType.Id).ToList();
+                    
             try
             {
-                //await _dataContext.BillingEntries.AddRangeAsync(billings);
-                await _dataContext.SaveChangesAsync(cancellationToken: default);
+                await _dataContext.Bills.AddRangeAsync(sortedBills);
+                await _dataContext.SaveChangesAsync();
 
                 return Result.Success();
             }
             catch (Exception)
             {
-                throw new ApplicationException($"An error occurred while writing data to the database. Method: {nameof(SaveBillingsAsync)}");
+                return Result.Failure($"An error occurred while saving data to database." +
+                    $" Method: {nameof(SaveSortedBillsAsync)}");
             }                 
         }
     }
