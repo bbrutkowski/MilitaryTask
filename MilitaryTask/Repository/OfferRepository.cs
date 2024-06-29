@@ -12,7 +12,8 @@ namespace MilitaryTask.Repository
         public async Task<Result<string>> GetOfferIdAsync()
         {
             var random = new Random();
-            var randomNumber = random.Next(1, 3);
+            //var randomNumber = random.Next(1, 3);
+            var randomNumber = 1;
 
             try
             {

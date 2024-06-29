@@ -17,7 +17,7 @@ namespace MilitaryTask.Repository
         {
             if (!bills.Any()) return Result.Failure("No bills to save");
 
-            var sortedBills = bills.OrderBy(x => x.BillType.Id).ToList();
+            var sortedBills = bills.OrderBy(x => x.BillType.BillTypeId).ToList();
                     
             try
             {
@@ -31,6 +31,21 @@ namespace MilitaryTask.Repository
                 return Result.Failure($"An error occurred while saving data to database." +
                     $" Method: {nameof(SaveSortedBillsAsync)}");
             }                 
+        }
+
+        public async Task<Result> SaveBillTypesAsync(List<BillType> billTypes)
+        {
+            try
+            {
+                await _dataContext.BillTypes.AddRangeAsync(billTypes);
+                await _dataContext.SaveChangesAsync();
+
+                return Result.Success();
+            }
+            catch (Exception e)
+            {
+                return Result.Failure(e.Message);
+            }
         }
     }
 }

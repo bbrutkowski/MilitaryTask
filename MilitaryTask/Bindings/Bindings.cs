@@ -34,6 +34,9 @@ namespace MilitaryTask.Bindings
             Bind<IOfferService>().To<OfferService>();
             Bind<IOfferRepository>().To<OfferRepository>();
 
+            Bind<ITenderService>().To<TenderService>();
+            Bind<ITenderRepository>().To<TenderRepository>();
+
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)

@@ -6,5 +6,6 @@ namespace MilitaryTask.Repository.Interfaces
     public interface IBillingRespository
     {
         Task<Result> SaveSortedBillsAsync(List<Bill> billings);
+        Task<Result> SaveBillTypesAsync(List<BillType> billTypes);
     }
 }

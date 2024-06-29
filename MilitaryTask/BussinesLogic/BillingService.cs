@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions.ValueTasks;
 using MilitaryTask.BussinesLogic.Interfaces;
 using MilitaryTask.Model;
 using MilitaryTask.Repository.Interfaces;
@@ -61,6 +62,35 @@ namespace MilitaryTask.BussinesLogic
             }
         }
 
+        public async Task<Result> SaveBillTypesAsync(List<BillingEntry> billingEntries)
+        {
+            if (!billingEntries.Any()) return Result.Failure("No bill types to save");
+            var billTypes = new List<BillType>();
+
+            try
+            {
+                foreach (var billingEntry in billingEntries)
+                {
+                    var billType = new BillType()
+                    {
+                        BillTypeId = billingEntry.Type.Id,
+                        Name = billingEntry.Type.Name
+                    };
+
+                    billTypes.Add(billType);
+                }
+
+                var savingResult = await _billingRepository.SaveBillTypesAsync(billTypes);
+                if (savingResult.IsFailure) return Result.Failure(savingResult.Error);
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.Message);
+            }
+        }
+
         public Result<List<Bill>> ConvertEntriesToBills(List<BillingEntry> billingEntries)
         {
             try
@@ -73,8 +103,8 @@ namespace MilitaryTask.BussinesLogic
                     {
                         Id = billingEntry.Id,
                         OccurredAt = billingEntry.OccurredAt,
-                        Tender = new Tender() { Id = billingEntry.Offer.Id, Name = billingEntry.Offer.Name },
-                        BillType = new BillType() { Id = billingEntry.Type.Id, Name = billingEntry.Type.Name },
+                        Tender = new Tender() { TenderId = billingEntry.Offer.Id, Name = billingEntry.Offer.Name },
+                        BillType = new BillType() { BillTypeId = billingEntry.Type.Id, Name = billingEntry.Type.Name },
                         Amount = new Amount() { Value = billingEntry.Value.Amount, Currency = billingEntry.Value.Currency },
                         TaxRate = new TaxRate() { Percentage = billingEntry.Tax.Percentage },
                         AccountBalance = new AccountBalance() { Value = billingEntry.Balance.Amount, Currency = billingEntry.Balance.Currency },
