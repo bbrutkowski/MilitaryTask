@@ -25,6 +25,8 @@ namespace MilitaryTask.DataContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<Order>(x =>
             {
                 x.ToTable("OrderTable", "dbo");
@@ -51,22 +53,7 @@ namespace MilitaryTask.DataContext
                 x.HasIndex(e => new { e.OrderId, e.StoreId })
                  .IsUnique()
                  .HasDatabaseName("si");
-            });
-
-            modelBuilder.Entity<AccountBalance>(x =>
-            {
-                x.HasKey(k => k.Id);
-            });
-
-            modelBuilder.Entity<TaxRate>(x =>
-            {
-                x.HasKey(k => k.Id);
-            });
-
-            modelBuilder.Entity<Amount>(x =>
-            {
-                x.HasKey(k => k.Id);
-            });
+            });     
 
             modelBuilder.Entity<Bill>(x =>
             {
@@ -95,8 +82,6 @@ namespace MilitaryTask.DataContext
                  .HasForeignKey<Bill>(ab => ab.AccountBalanceId)
                  .OnDelete(DeleteBehavior.Cascade);
             });
-
-            base.OnModelCreating(modelBuilder);
         }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

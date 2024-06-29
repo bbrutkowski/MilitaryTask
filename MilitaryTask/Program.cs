@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions.ValueTasks;
 using Microsoft.Extensions.Configuration;
 using MilitaryTask.Bindings;
 using MilitaryTask.BussinesLogic.Interfaces;
@@ -9,6 +10,13 @@ internal class Program
     private static async Task Main()
     {
         var programResult = await Run();
+        if (programResult.IsFailure)
+        {
+            await Console.Out.WriteLineAsync(programResult.Error);
+            Console.ReadKey();
+            return;
+        }
+
         await Console.Out.WriteLineAsync(programResult.Value);
         Console.ReadKey();
     }
@@ -32,6 +40,7 @@ internal class Program
         var billingService = kernel.Get<IBillingService>();
         var authService = kernel.Get<IAuthService>();
         var orderService = kernel.Get<IOfferService>();
+        var tenderService = kernel.Get<ITenderService>();
 
         var authResult = await authService.GetAuthAsync();
         if (authResult.IsFailure) return Result.Failure<string>("Authorization not granted");
@@ -49,16 +58,22 @@ internal class Program
         var billingEntries = await billingService.DeserializeDataToBillingEntryListAsync(billingDetailsResult.Value);
         if (billingEntries.IsFailure) return Result.Failure<string>(billingEntries.Error);
 
-        var billsMappingResult = billingService.ConvertEntriesToBills(billingEntries.Value.BillingEntries);
-        if (billsMappingResult.IsFailure) return Result.Failure<string>(billsMappingResult.Error);
+        var saveBillTypeResult = await billingService.SaveBillTypesAsync(billingEntries.Value.BillingEntries);
+        if (saveBillTypeResult.IsFailure) return Result.Failure<string>(saveBillTypeResult.Error);
 
-        await Console.Out.WriteLineAsync("Downloaded bills will be saved to the database");
+        var saveTenderResult = await tenderService.SaveTenderAsync(billingEntries.Value.BillingEntries);
+        if (saveTenderResult.IsFailure) return Result.Failure<string>(saveTenderResult.Error);
 
-         var savingResult = await billingService.SaveSortedBillsAsync(billsMappingResult.Value);
-        if (savingResult.IsFailure) return Result.Failure<string>(savingResult.Error);
+        //var billsMappingResult = billingService.ConvertEntriesToBills(billingEntries.Value.BillingEntries);
+        //if (billsMappingResult.IsFailure) return Result.Failure<string>(billsMappingResult.Error);
 
-        await Console.Out.WriteLineAsync("Data has been successfully saved to the database");
+        //await Console.Out.WriteLineAsync("Downloaded bills will be saved to the database");
 
-        return Result.Success("The program completed successfully");   
+        // var savingResult = await billingService.SaveSortedBillsAsync(billsMappingResult.Value);
+        //if (savingResult.IsFailure) return Result.Failure<string>(savingResult.Error);
+
+        //await Console.Out.WriteLineAsync("Data has been successfully saved to the database");
+
+        return Result.Success("Program completed successfully");   
     }
 }

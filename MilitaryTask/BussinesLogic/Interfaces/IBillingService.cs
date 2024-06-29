@@ -9,5 +9,6 @@ namespace MilitaryTask.BussinesLogic.Interfaces
         Task<Result> SaveSortedBillsAsync(List<Bill> billings);
         Task<Result<BillingEntriesList>> DeserializeDataToBillingEntryListAsync(string data);
         Result<List<Bill>> ConvertEntriesToBills(List<BillingEntry> billingEntries);
+        Task<Result> SaveBillTypesAsync(List<BillingEntry> billingEntries);
     }
 }

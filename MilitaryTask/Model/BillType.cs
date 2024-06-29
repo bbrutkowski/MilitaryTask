@@ -2,7 +2,8 @@
 {
     public class BillType
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
+        public string BillTypeId { get; set; }
         public string Name { get; set; }
     }
 }
