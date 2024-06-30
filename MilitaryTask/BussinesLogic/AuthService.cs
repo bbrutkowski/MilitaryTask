@@ -59,9 +59,9 @@ namespace MilitaryTask.BussinesLogic
 
                 return Result.Success(tokenResponse.AccessToken);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new ApplicationException("Error occurred while obtaining the access token");
+                return Result.Failure<string>(ex.Message);
             }
         }
 
@@ -85,9 +85,9 @@ namespace MilitaryTask.BussinesLogic
 
                 return Result.Success(deviceCodeResult);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new ApplicationException("Error occurred while receiving the device code");
+                return Result.Failure<DeviceCodeResponse>(ex.Message);
             }
         }
     }

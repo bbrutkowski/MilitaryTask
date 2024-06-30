@@ -2,13 +2,11 @@
 {
     public class Bill
     {
-        public string Id { get; set; }
+        public int Id { get; set; } // key
+        public string BillId { get; set; } // Id from JSON
         public DateTime OccurredAt { get; set; }
 
-        public string TenderId { get; set; }
-        public Tender Tender { get; set; }
-
-        public string BillTypeId { get; set; }
+        public int BillTypeId { get; set; }
         public BillType BillType { get; set; }
 
         public int AmountId { get; set; }
@@ -19,5 +17,8 @@
 
         public int AccountBalanceId { get; set; }
         public AccountBalance AccountBalance { get; set; }
+
+        public int TenderId { get; set; }
+        public Tender Tender { get; set; }
     }
 }

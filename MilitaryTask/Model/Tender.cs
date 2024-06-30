@@ -2,8 +2,8 @@
 {
     public class Tender
     {
-        public int Id { get; set; }
-        public string TenderId { get; set; }
+        public int Id { get; set; } // key
+        public string TenderId { get; set; } // Id from JSON
         public string Name { get; set; }
 
         public List<Bill> Bills { get; set; }

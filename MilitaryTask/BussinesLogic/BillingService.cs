@@ -1,5 +1,4 @@
 ﻿using CSharpFunctionalExtensions;
-using CSharpFunctionalExtensions.ValueTasks;
 using MilitaryTask.BussinesLogic.Interfaces;
 using MilitaryTask.Model;
 using MilitaryTask.Repository.Interfaces;
@@ -23,7 +22,6 @@ namespace MilitaryTask.BussinesLogic
 
         public async Task<Result<string>> GetBillingDetailsByOfferIdAsync(string orderId, string authToken)
         {
-
             try
             {
                 var requestBuildResult = _httpService.CreateGetRequestWithParams(_billingUrl, _offerIdParamName, orderId);
@@ -41,10 +39,19 @@ namespace MilitaryTask.BussinesLogic
 
         public async Task<Result> SaveSortedBillsAsync(List<Bill> bills)
         {
-            var savingResult = await _billingRepository.SaveSortedBillsAsync(bills);
-            if (savingResult.IsFailure) return Result.Failure(savingResult.Error);
+            try
+            {
+                if (!bills.Any()) return Result.Failure("No bills to save");
 
-            return Result.Success(savingResult);
+                var savingResult = await _billingRepository.SaveSortedBillsAsync(bills);
+                if (savingResult.IsFailure) return Result.Failure(savingResult.Error);
+
+                return Result.Success(savingResult);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.Message);
+            }
         } 
 
         public async Task<Result<BillingEntriesList>> DeserializeDataToBillingEntryListAsync(string data)
@@ -56,9 +63,9 @@ namespace MilitaryTask.BussinesLogic
               
                 return Result.Success(billingEntries);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new ApplicationException($"Error occurred while deserializing data");
+                return Result.Failure<BillingEntriesList>(ex.Message);
             }
         }
 
@@ -101,7 +108,7 @@ namespace MilitaryTask.BussinesLogic
                 {
                     var bill = new Bill()
                     {
-                        Id = billingEntry.Id,
+                        BillId = billingEntry.Id,
                         OccurredAt = billingEntry.OccurredAt,
                         Tender = new Tender() { TenderId = billingEntry.Offer.Id, Name = billingEntry.Offer.Name },
                         BillType = new BillType() { BillTypeId = billingEntry.Type.Id, Name = billingEntry.Type.Name },
@@ -115,9 +122,9 @@ namespace MilitaryTask.BussinesLogic
 
                 return Result.Success(bills);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return Result.Failure<List<Bill>>("An error occurred while mapping the data");
+                return Result.Failure<List<Bill>>(ex.Message);
             }
         }
     }

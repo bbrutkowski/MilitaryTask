@@ -5,8 +5,6 @@ using MilitaryTask.BussinesLogic.Interfaces;
 using MilitaryTask.Repository;
 using MilitaryTask.Repository.Interfaces;
 using Ninject.Modules;
-using System.Net.Http;
-using static CSharpFunctionalExtensions.Result;
 using DataContextAlias = MilitaryTask.DataContext.DataContext;
 
 namespace MilitaryTask.Bindings
@@ -33,9 +31,6 @@ namespace MilitaryTask.Bindings
 
             Bind<IOfferService>().To<OfferService>();
             Bind<IOfferRepository>().To<OfferRepository>();
-
-            Bind<ITenderService>().To<TenderService>();
-            Bind<ITenderRepository>().To<TenderRepository>();
 
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)

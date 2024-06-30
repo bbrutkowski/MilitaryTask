@@ -18,19 +18,16 @@ namespace MilitaryASPWeb.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var productCatalogResult = await _fileService.ProcessXmlFiles();
-            if (productCatalogResult.IsFailure) return BadRequest(productCatalogResult.Error);
+            var productCatalogResult = await _fileService.CreateProductListFromDeliveredXmlFilesAsync();
+            if (productCatalogResult.IsFailure) return BadRequest(productCatalogResult.Error);        
 
-            var createListResult = await _productService.CreateProductList(productCatalogResult.Value);
-            if (createListResult.IsFailure) return BadRequest(createListResult.Error);        
-
-            return View(createListResult.Value);
+            return View(productCatalogResult.Value);
         }
 
         [HttpPost]
         public async Task<IActionResult> SaveFavoritesAsync([FromBody] List<FavoriteProduct> favoriteItems, CancellationToken token)
         {
-            if (!favoriteItems.Any()) return BadRequest();
+            if (!favoriteItems.Any()) return BadRequest("No favorite items selected");
 
             var savingResult = await _productService.SaveFavoriteProductsAsync(favoriteItems, token);
             if (savingResult.IsFailure) return BadRequest(savingResult.Error);

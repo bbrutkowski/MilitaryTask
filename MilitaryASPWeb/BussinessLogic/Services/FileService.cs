@@ -1,8 +1,8 @@
 ﻿using CSharpFunctionalExtensions;
 using MilitaryASPWeb.BussinessLogic.Model;
-using MilitaryASPWeb.Models.Model;
 using MilitaryASPWeb.Models.Model.Exceptions;
 using MilitaryASPWeb.Models.Services.Interfaces;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace MilitaryASPWeb.BussinessLogic.Services
@@ -14,62 +14,89 @@ namespace MilitaryASPWeb.BussinessLogic.Services
 
         private string[] GetXmlFiles() => Directory.GetFiles(_documentsFolderPath, _xmlFileType);
 
-        public async Task<Result<ProductCatalog>> ProcessXmlFiles()
+        public async Task<Result<List<Product>>> CreateProductListFromDeliveredXmlFilesAsync()
         {
-            var mainProducts = new ProductCatalog();
-            if (!Directory.Exists(_documentsFolderPath)) return Result.Failure<ProductCatalog>("Folder path does not exist");
+            var products = new List<Product>();
+            if (!Directory.Exists(_documentsFolderPath)) return Result.Failure<List<Product>>("Folder path does not exist");
 
             try
             {
                 var xmlFiles = GetXmlFiles();
-                if (!xmlFiles.Any()) return Result.Failure<ProductCatalog>("No files downloaded");
+                if (!xmlFiles.Any()) return Result.Failure<List<Product>>("No files downloaded");
 
                 foreach (var xmlFile in xmlFiles)
                 {
                     var document = XDocument.Load(xmlFile);
-                    if (document is null) return Result.Failure<ProductCatalog>("File has not been loaded");
+                    if (document is null) return Result.Failure<List<Product>>("File has not been loaded");   
 
                     switch (Path.GetFileName(xmlFile))
                     {
                         case "dostawca1plik1.xml":
-                            mainProducts.Offerts = DeserializeOfferts(document);
+                            products.AddRange(DeserializeFileOneFromFirstSupplier(document));
+                            break;
+                        case "dostawca1plik2.xml":
+                            products.AddRange(DeserializeFileTwoFromFirstSupplier(document));
                             break;
                         case "dostawca2plik1.xml":
-                            mainProducts.ProductDetails = DeserializeProductDetails(document);
+                            products.AddRange(DeserializeFileOneFromSecondSupplier(document));
                             break;
                         case "dostawca2plik2.xml":
-                            mainProducts.SimpleProductOfferts = DeserializeSimpleProducts(document);
+                            products.AddRange(DeserializeFileTwoFromSecondSupplier(document));
                             break;
                         case "dostawca3plik1.xml":
-                            mainProducts.InternationatProducts = DeserializeInternationalProducts(document);
+                            products.AddRange(DeserializeInternationalProducts(document));
                             break;
                         default:
-                            Console.WriteLine($"Nieobsługiwany plik: {Path.GetFileName(xmlFile)}");
+                            Console.WriteLine($"Unsupported file: {Path.GetFileName(xmlFile)}");
                             break;
                     }
                 }
 
                 await Task.Delay(3000); // long process simulation
 
-                return Result.Success(mainProducts);
+                return Result.Success(products);
             }
             catch (ProcessXmlFileException ex)
             {
-                return Result.Failure<ProductCatalog>(ex.Message);
+                return Result.Failure<List<Product>>(ex.Message);
             }
         }
 
-        private List<InternationalProduct> DeserializeInternationalProducts(XDocument doc)
+        private List<Product> DeserializeFileTwoFromFirstSupplier(XDocument doc)
+        {
+            try
+            {
+                return doc.Descendants("product")
+                    .Select(p => new Product
+                    {
+                        Id = (int)p.Attribute("id"),
+                        Name = p.Descendants("name")
+                                    .FirstOrDefault(z => (string)z.Attribute("{http://www.w3.org/XML/1998/namespace}lang") == "pol").Value,
+                        Description = RemoveHtmlTagsAndDashes(p.Descendants("long_desc")
+                                           .FirstOrDefault(z => (string)z.Attribute("{http://www.w3.org/XML/1998/namespace}lang") == "pol").Value),
+                        Photo = (string)p.Descendants("image")
+                                     .FirstOrDefault().Attribute("url")
+                    })
+                    .ToList();
+            }
+            catch (Exception)
+            {
+                throw new ProcessXmlFileException($"An error occurred while deserializing file in method" +
+                    $" {nameof(DeserializeFileTwoFromFirstSupplier)}");
+            }
+        }
+
+        private List<Product> DeserializeInternationalProducts(XDocument doc)
         {
             try
             {
                 return doc.Descendants("produkt")
-                    .Select(p => new InternationalProduct
+                    .Select(p => new Product
                     {
                         Id = (int)p.Element("id"),
                         Name = (string)p.Element("nazwa"),                      
-                        Description = (string)p.Element("dlugi_opis"),                     
-                        Status = (int)p.Element("status"),                      
+                        Description = RemoveHtmlTagsAndDashes((string)p.Element("dlugi_opis")),                     
+                        Quantity = (int)p.Element("status"),                      
                         Photo = p.Descendants("zdjecie").Select(z => (string)z.Attribute("url")).FirstOrDefault()
                     })
                     .ToList();
@@ -81,16 +108,16 @@ namespace MilitaryASPWeb.BussinessLogic.Services
             }
         }
 
-        private List<SimpleProduct> DeserializeSimpleProducts(XDocument doc)
+        private List<Product> DeserializeFileTwoFromSecondSupplier(XDocument doc)
         {
             try
             {
                 return doc.Descendants("product")
-                    .Select(sp => new SimpleProduct
+                    .Select(sp => new Product
                     {
                         Id = (int)sp.Element("id"),                      
                         Name = (string)sp.Element("name"),
-                        Description = (string)sp.Element("desc"),                      
+                        Description = RemoveHtmlTagsAndDashes((string)sp.Element("desc")),                      
                         Quantity = (int)sp.Element("qty"),                 
                         Photo = sp.Descendants("photo").Select(x => (string)x).FirstOrDefault()
                     })
@@ -99,16 +126,16 @@ namespace MilitaryASPWeb.BussinessLogic.Services
             catch (Exception)
             {
                 throw new ProcessXmlFileException($"An error occurred while deserializing file in method" +
-                    $" {nameof(DeserializeSimpleProducts)}");
+                    $" {nameof(DeserializeFileTwoFromSecondSupplier)}");
             };
         }
 
-        private List<ProductDetails> DeserializeProductDetails(XDocument doc)
+        private List<Product> DeserializeFileOneFromSecondSupplier(XDocument doc)
         {
             try
             {
                 return doc.Descendants("product")
-                    .Select(pd => new ProductDetails
+                    .Select(pd => new Product
                     {                      
                         Id = (int)pd.Element("id"),                     
                         Quantity = (int)pd.Element("qty")
@@ -118,27 +145,36 @@ namespace MilitaryASPWeb.BussinessLogic.Services
             catch (Exception)
             {
                 throw new ProcessXmlFileException($"An error occurred while deserializing file in method" +
-                    $" {nameof(DeserializeProductDetails)}");
+                    $" {nameof(DeserializeFileOneFromSecondSupplier)}");
             }
         }
 
-        private List<Offer> DeserializeOfferts(XDocument doc)
+        private List<Product> DeserializeFileOneFromFirstSupplier(XDocument doc)
         {
             try
             {
                 return doc.Descendants("product")
-                    .Select(o => new Offer
+                    .Select(o => new Product
                     {
                         Id = (int)o.Attribute("id"),                       
-                        StockQuantity = (int)o.Descendants("stock").FirstOrDefault().Attribute("quantity")
+                        Quantity = (int)o.Descendants("stock").FirstOrDefault().Attribute("quantity")
                     })
                     .ToList();
             }
             catch (Exception)
             {
                 throw new ProcessXmlFileException($"An error occurred while deserializing file in method" +
-                    $" {nameof(DeserializeOfferts)}");
+                    $" {nameof(DeserializeFileOneFromFirstSupplier)}");
             }
+        }
+
+        private string RemoveHtmlTagsAndDashes(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            var withoutTags = Regex.Replace(input, "<.*?>", string.Empty);
+            return withoutTags.Replace("-", string.Empty);
         }
     }
 }
