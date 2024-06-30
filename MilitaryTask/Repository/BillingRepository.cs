@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using Microsoft.EntityFrameworkCore;
 using MilitaryTask.Model;
 using MilitaryTask.Repository.Interfaces;
 using DataContextAlias = MilitaryTask.DataContext.DataContext;
@@ -8,30 +9,54 @@ namespace MilitaryTask.Repository
     internal class BillingRepository : IBillingRespository
     {
         private readonly DataContextAlias _dataContext;
-        private const string EmptyDataError = "No data to save";
-        private const string SavaDataError = "Error occured while saving data";
 
         public BillingRepository(DataContextAlias dataContext) => _dataContext = dataContext;
          
         public async Task<Result> SaveSortedBillsAsync(List<Bill> bills)
         {
-            if (!bills.Any()) return Result.Failure("No bills to save");
-
-            var sortedBills = bills.OrderBy(x => x.BillType.BillTypeId).ToList();
-                    
             try
             {
-                await _dataContext.Bills.AddRangeAsync(sortedBills);
-                await _dataContext.SaveChangesAsync();
+                foreach (var bill in bills)
+                {
+                    var existingTender = await _dataContext.Tenders
+                        .FirstOrDefaultAsync(t => t.TenderId == bill.Tender.TenderId);
+                    if (existingTender is not null)
+                    {
+                        bill.TenderId = existingTender.Id;
+                        bill.Tender = existingTender;
+                    }
+                    else
+                    {
+                        await _dataContext.Tenders.AddAsync(bill.Tender);
+                        await _dataContext.SaveChangesAsync();  
+                        bill.TenderId = bill.Tender.Id;
+                    }
 
+                    var existingBillType = await _dataContext.BillTypes
+                        .FirstOrDefaultAsync(bt => bt.BillTypeId == bill.BillType.BillTypeId);
+                    if (existingBillType is not null)
+                    {
+                        bill.BillTypeId = existingBillType.Id;
+                        bill.BillType = existingBillType;
+                    }
+                    else
+                    {
+                        await _dataContext.BillTypes.AddAsync(bill.BillType);
+                        await _dataContext.SaveChangesAsync();  
+                        bill.BillTypeId = bill.BillType.Id;
+                    }
+
+                    await _dataContext.Bills.AddAsync(bill);
+                }
+
+                await _dataContext.SaveChangesAsync();
                 return Result.Success();
             }
-            catch (Exception)
-            {
-                return Result.Failure($"An error occurred while saving data to database." +
-                    $" Method: {nameof(SaveSortedBillsAsync)}");
-            }                 
-        }
+            catch (Exception ex)
+            { 
+                return Result.Failure(ex.Message);
+            }
+        } 
 
         public async Task<Result> SaveBillTypesAsync(List<BillType> billTypes)
         {

@@ -11,6 +11,7 @@
     <tr id="header-row">
         <th>Id</th>
         <th>Photo</th>
+        <th>Name</th>
         <th>Description</th>
         <th>Quantity</th>
         <th>Favorite</th>
@@ -32,6 +33,16 @@
                 else
                 {
                     <span>No picture</span>
+                }
+            </td>
+            <td>
+                @if (!string.IsNullOrEmpty(item.Name))
+                {
+                    @item.Name
+                }
+                else
+                {
+                    <span>No product name</span>
                 }
             </td>
             <td>
@@ -66,7 +77,7 @@
     }
 </table>
 
-<button id="saveFavoritesButton">Save</button>
+<button id="saveFavoritesButton">Save favorites</button>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {

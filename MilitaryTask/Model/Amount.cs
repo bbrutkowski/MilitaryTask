@@ -6,6 +6,6 @@
         public string Value { get; set; }
         public string Currency { get; set; }
 
-        public Bill Bill { get; set; } 
+        public Bill Bill { get; set; }
     }
 }

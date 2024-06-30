@@ -24,9 +24,9 @@ namespace MilitaryTask.BussinesLogic
 
                 return Result.Success(content);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new HttpRequestException("Error sending request");
+                return Result.Failure<string>(ex.Message);
             }
         }
 
@@ -45,9 +45,9 @@ namespace MilitaryTask.BussinesLogic
                 if (string.IsNullOrEmpty(content)) return Result.Failure<string>(content);
                 return Result.Success(content);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new HttpRequestException("Error sending request");
+                return Result.Failure<string>(ex.Message);
             }
         }
 
@@ -67,9 +67,9 @@ namespace MilitaryTask.BussinesLogic
 
                 return Result.Success(request);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new ApplicationException("Error creating url with params");
+                return Result.Failure<HttpRequestMessage>(ex.Message);
             }
         }
     }

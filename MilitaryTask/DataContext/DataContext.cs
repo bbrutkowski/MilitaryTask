@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using MilitaryTask.Model;
 
 namespace MilitaryTask.DataContext
@@ -20,7 +21,9 @@ namespace MilitaryTask.DataContext
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DbConnection"));
+            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DbConnection"))
+                          .EnableSensitiveDataLogging()
+                          .LogTo(Console.WriteLine, LogLevel.Information);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -57,36 +60,31 @@ namespace MilitaryTask.DataContext
 
             modelBuilder.Entity<Bill>(x =>
             {
-                x.HasOne(t => t.Tender)
-                 .WithMany(b => b.Bills)
-                 .HasForeignKey(ti => ti.TenderId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                x.HasOne(b => b.Tender)
+                 .WithMany(t => t.Bills)
+                 .HasForeignKey(b => b.TenderId)
+                 .OnDelete(DeleteBehavior.Cascade);
 
                 x.HasOne(b => b.BillType)
-                 .WithOne()
-                 .HasForeignKey<Bill>(bt => bt.BillTypeId)
+                 .WithOne(bt => bt.Bill)
+                 .HasForeignKey<Bill>(b => b.BillTypeId)
                  .OnDelete(DeleteBehavior.Cascade);
 
-                x.HasOne(a => a.Amount)
-                 .WithOne()
-                 .HasForeignKey<Bill>(ai => ai.AmountId)
+                x.HasOne(b => b.Amount)
+                 .WithOne(a => a.Bill)
+                 .HasForeignKey<Bill>(b => b.AmountId)
                  .OnDelete(DeleteBehavior.Cascade);
 
-                x.HasOne(tr => tr.TaxRate)
-                 .WithOne()
-                 .HasForeignKey<Bill>(tr => tr.TaxRateId)
+                x.HasOne(b => b.TaxRate)
+                 .WithOne(tr => tr.Bill)
+                 .HasForeignKey<Bill>(b => b.TaxRateId)
                  .OnDelete(DeleteBehavior.Cascade);
 
-                x.HasOne(ab => ab.AccountBalance)
-                 .WithOne()
-                 .HasForeignKey<Bill>(ab => ab.AccountBalanceId)
+                x.HasOne(b => b.AccountBalance)
+                 .WithOne(ab => ab.Bill)
+                 .HasForeignKey<Bill>(b => b.AccountBalanceId)
                  .OnDelete(DeleteBehavior.Cascade);
             });
-        }
-
-        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            return base.SaveChangesAsync(cancellationToken);
         }
     }
 }

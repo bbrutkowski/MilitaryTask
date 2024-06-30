@@ -1,10 +1,10 @@
 ﻿using CSharpFunctionalExtensions;
-using MilitaryASPWeb.Models.Model;
+using MilitaryASPWeb.BussinessLogic.Model;
 
 namespace MilitaryASPWeb.Models.Services.Interfaces
 {
     public interface IFileService
     {
-        public Task<Result<ProductCatalog>> ProcessXmlFiles();
+        public Task<Result<List<Product>>> CreateProductListFromDeliveredXmlFilesAsync();
     }
 }
