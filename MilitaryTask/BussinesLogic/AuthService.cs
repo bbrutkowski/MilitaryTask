@@ -4,7 +4,6 @@ using MilitaryTask.Model.Auth;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Text;
-using DeviceCodeResponse = MilitaryTask.Model.Auth.DeviceCodeResponse;
 
 namespace MilitaryTask.BussinesLogic
 {
@@ -51,7 +50,7 @@ namespace MilitaryTask.BussinesLogic
                 var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_clientId}:{_clientSecret}"));
                 request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
-                var response = await _httpService.SendGetRequest(request);
+                var response = await _httpService.SendGetRequestAsync(request);
                 if (response.IsFailure) return Result.Failure<string>("Access token not received");
 
                 var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(response.Value);
@@ -77,7 +76,7 @@ namespace MilitaryTask.BussinesLogic
 
                 request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
-                var response = await _httpService.SendGetRequest(request);
+                var response = await _httpService.SendGetRequestAsync(request);
                 if (response.IsFailure) return Result.Failure<DeviceCodeResponse>("Device number not received");
 
                 var deviceCodeResult = JsonConvert.DeserializeObject<DeviceCodeResponse>(response.Value);
