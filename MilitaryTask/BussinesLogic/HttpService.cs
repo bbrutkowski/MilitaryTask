@@ -13,12 +13,12 @@ namespace MilitaryTask.BussinesLogic
 
         public HttpClient CreateClient() => _httpClientFactory.CreateClient();
 
-        public async Task<Result<string>> SendGetRequest(HttpRequestMessage request)
+        public async Task<Result<string>> SendGetRequestAsync(HttpRequestMessage request)
         {
+            var client = CreateClient();
+
             try
             {
-                var client = CreateClient();
-
                 var response = await client.SendAsync(request);
                 var content = await response.Content.ReadAsStringAsync();
 
@@ -30,7 +30,7 @@ namespace MilitaryTask.BussinesLogic
             }
         }
 
-        public async Task<Result<string>> SendGetRequestWithBearerToken(HttpRequestMessage request, string bearerToken)
+        public async Task<Result<string>> SendGetRequestAsync(HttpRequestMessage request, string bearerToken)
         {
             var client = CreateClient();
 

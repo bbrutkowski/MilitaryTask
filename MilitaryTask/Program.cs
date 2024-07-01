@@ -48,7 +48,7 @@ internal class Program
         var orderIdResult = await orderService.GetOfferIdAsync();
         if (orderIdResult.IsFailure) return Result.Failure<string>(orderIdResult.Error); 
 
-        var billingDetailsResult = await billingService.GetBillingDetailsByOfferIdAsync(orderIdResult.Value, authResult.Value);
+        var billingDetailsResult = await billingService.GetBillsByOfferIdAsync(orderIdResult.Value, authResult.Value);
         if (billingDetailsResult.IsFailure) Result.Failure<string>(billingDetailsResult.Error);
 
         await Console.Out.WriteLineAsync("Billings details successfully downloaded");
@@ -61,7 +61,7 @@ internal class Program
 
         await Console.Out.WriteLineAsync("Downloaded bills will be saved to the database");
 
-        var savingResult = await billingService.SaveSortedBillsAsync(convertResult.Value);
+        var savingResult = await billingService.SaveBillsAsync(convertResult.Value);
         if (savingResult.IsFailure) return Result.Failure<string>(savingResult.Error);
 
         await Console.Out.WriteLineAsync("Data has been successfully saved to the database");

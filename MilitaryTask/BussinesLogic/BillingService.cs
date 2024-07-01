@@ -11,7 +11,7 @@ namespace MilitaryTask.BussinesLogic
         private readonly IHttpService _httpService; 
         private readonly IBillingRespository _billingRepository;
 
-        private readonly string _billingUrl = "https://api.allegro.pl/billing/billing-entries";
+        private readonly string _billingBaseUrl = "https://api.allegro.pl/billing/billing-entries";
         private readonly string _offerIdParamName = "offer.id";
 
         public BillingService(IHttpService httpService, IBillingRespository billingRespository)
@@ -20,14 +20,14 @@ namespace MilitaryTask.BussinesLogic
             _billingRepository = billingRespository;
         }
 
-        public async Task<Result<string>> GetBillingDetailsByOfferIdAsync(string orderId, string authToken)
+        public async Task<Result<string>> GetBillsByOfferIdAsync(string orderId, string authToken)
         {
             try
             {
-                var requestBuildResult = _httpService.CreateGetRequestWithParams(_billingUrl, _offerIdParamName, orderId);
+                var requestBuildResult = _httpService.CreateGetRequestWithParams(_billingBaseUrl, _offerIdParamName, orderId);
                 if (requestBuildResult.IsFailure) return Result.Failure<string>(requestBuildResult.Error);
 
-                var result = await _httpService.SendGetRequestWithBearerToken(requestBuildResult.Value, authToken);
+                var result = await _httpService.SendGetRequestAsync(requestBuildResult.Value, authToken);
 
                 return Result.Success(result.Value);
             }
@@ -37,7 +37,7 @@ namespace MilitaryTask.BussinesLogic
             }
         }
 
-        public async Task<Result> SaveSortedBillsAsync(List<Bill> bills)
+        public async Task<Result> SaveBillsAsync(List<Bill> bills)
         {
             try
             {
@@ -66,35 +66,6 @@ namespace MilitaryTask.BussinesLogic
             catch (Exception ex)
             {
                 return Result.Failure<BillingEntriesList>(ex.Message);
-            }
-        }
-
-        public async Task<Result> SaveBillTypesAsync(List<BillingEntry> billingEntries)
-        {
-            if (!billingEntries.Any()) return Result.Failure("No bill types to save");
-            var billTypes = new List<BillType>();
-
-            try
-            {
-                foreach (var billingEntry in billingEntries)
-                {
-                    var billType = new BillType()
-                    {
-                        BillTypeId = billingEntry.Type.Id,
-                        Name = billingEntry.Type.Name
-                    };
-
-                    billTypes.Add(billType);
-                }
-
-                var savingResult = await _billingRepository.SaveBillTypesAsync(billTypes);
-                if (savingResult.IsFailure) return Result.Failure(savingResult.Error);
-
-                return Result.Success();
-            }
-            catch (Exception ex)
-            {
-                return Result.Failure(ex.Message);
             }
         }
 
