@@ -15,7 +15,7 @@ namespace MilitaryTask.Repository
         {
             try
             {
-               await _dataContext.Bills.AddRangeAsync(bills);
+                await _dataContext.Bills.AddRangeAsync(bills);
                 await _dataContext.SaveChangesAsync();
                 return Result.Success();
             }

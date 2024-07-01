@@ -10,6 +10,8 @@ namespace MilitaryTask.Repository
     {
         private readonly DataContextAlias _dataContext = dataContext;
 
+        public async Task<bool> OfferExistsAsync(string offerId) => await _dataContext.Offerts.AnyAsync(x => x.OfferId == offerId);
+
         public async Task<Result<string>> GetOfferIdAsync()
         {
             var random = new Random();
@@ -32,9 +34,12 @@ namespace MilitaryTask.Repository
             }
         }
 
-        public async Task<bool> OfferExistsAsync(string offerId) => await _dataContext.Offerts.AnyAsync(x => x.TenderId == offerId);
-
-        public async Task<Offer> GetOfferByIdAsync(string offerId) => await _dataContext.Offerts.FirstOrDefaultAsync(x => x.TenderId == offerId) ?? new();
+        public async Task<int> GetOfferByIdAsync(string offerId)
+        {
+            return await _dataContext.Offerts.Where(x => x.OfferId == offerId)
+                .Select(x => x.Id)
+                .FirstOrDefaultAsync();     
+        }
 
         public async Task<Result> SaveOfferAsync(Offer offer)
         {

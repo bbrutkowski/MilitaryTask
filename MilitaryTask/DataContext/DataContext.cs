@@ -58,38 +58,6 @@ namespace MilitaryTask.DataContext
                  .HasDatabaseName("si");
             });
 
-            modelBuilder.Entity<BillType>(b =>
-            {
-                b.HasKey(k => k.Id);
-
-                b.Property(i => i.Id)
-                 .ValueGeneratedOnAdd();
-            });
-
-            modelBuilder.Entity<Amount>(b =>
-            {
-                b.HasKey(k => k.Id);
-
-                b.Property(i => i.Id)
-                 .ValueGeneratedOnAdd();
-            });
-
-            modelBuilder.Entity<TaxRate>(b =>
-            {
-                b.HasKey(k => k.Id);
-
-                b.Property(i => i.Id)
-                 .ValueGeneratedOnAdd();
-            });
-
-            modelBuilder.Entity<AccountBalance>(b =>
-            {
-                b.HasKey(k => k.Id);
-
-                b.Property(i => i.Id)
-                 .ValueGeneratedOnAdd();
-            });
-
             modelBuilder.Entity<Bill>(x =>
             {
                 x.HasKey(a => a.Id);

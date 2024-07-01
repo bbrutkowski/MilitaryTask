@@ -3,7 +3,7 @@
     public class Offer
     {
         public int Id { get; set; } // key
-        public string TenderId { get; set; } // Id from JSON
+        public string OfferId { get; set; } // Id from JSON
         public string Name { get; set; }
 
         public List<Bill> Bills { get; set; }

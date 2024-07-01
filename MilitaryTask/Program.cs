@@ -45,21 +45,13 @@ internal class Program
 
         await Console.Out.WriteLineAsync("Authorization granted");
 
-        var orderIdResult = await orderService.GetOfferIdAsync();
+        var orderIdResult = await orderService.GetOfferIdAsync(); 
         if (orderIdResult.IsFailure) return Result.Failure<string>(orderIdResult.Error); 
 
         var billListResult = await billingService.GetBillsByOfferIdAsync(orderIdResult.Value, authResult.Value);
         if (billListResult.IsFailure) Result.Failure<string>(billListResult.Error);
 
         await Console.Out.WriteLineAsync("Billings details successfully downloaded. Now it will be saved in the database");
-
-        //var billsConvertResult = await billingService.ConvertBillingEntryToBillsAsync(billListResult.Value);
-        //if (billsConvertResult.IsFailure) return Result.Failure<string>(billsConvertResult.Error);
-
-        //var convertResult = billingService.ConvertEntriesToBills(billingEntries.Value.BillingEntries);
-        //if (convertResult.IsFailure) return Result.Failure<string>(convertResult.Error);
-
-        //await Console.Out.WriteLineAsync("Downloaded bills will be saved to the database");
 
         var savingResult = await billingService.SaveBillsAsync(billListResult.Value);
         if (savingResult.IsFailure) return Result.Failure<string>(savingResult.Error);
