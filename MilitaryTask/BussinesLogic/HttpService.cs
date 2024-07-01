@@ -30,7 +30,7 @@ namespace MilitaryTask.BussinesLogic
             }
         }
 
-        public async Task<Result<string>> SendGetRequestAsync(HttpRequestMessage request, string bearerToken)
+        public async Task<Result<string>> SendGetRequestWithTokenAsync(HttpRequestMessage request, string bearerToken)
         {
             var client = CreateClient();
 

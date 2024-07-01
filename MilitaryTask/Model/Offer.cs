@@ -1,6 +1,6 @@
 ﻿namespace MilitaryTask.Model
 {
-    public class Tender
+    public class Offer
     {
         public int Id { get; set; } // key
         public string TenderId { get; set; } // Id from JSON

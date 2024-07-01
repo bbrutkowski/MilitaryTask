@@ -1,6 +1,8 @@
-﻿using CSharpFunctionalExtensions;
+﻿using AutoMapper;
+using CSharpFunctionalExtensions;
 using MilitaryTask.BussinesLogic.Interfaces;
 using MilitaryTask.Model;
+using MilitaryTask.Model.DTO;
 using MilitaryTask.Repository.Interfaces;
 using Newtonsoft.Json;
 
@@ -10,30 +12,44 @@ namespace MilitaryTask.BussinesLogic
     {
         private readonly IHttpService _httpService; 
         private readonly IBillingRespository _billingRepository;
+        private readonly IMapper _mapper;
+        private readonly IOfferRepository _offerRepository;
+        private readonly IBillTypeRepository _billTypeRepository;
 
         private readonly string _billingBaseUrl = "https://api.allegro.pl/billing/billing-entries";
         private readonly string _offerIdParamName = "offer.id";
 
-        public BillingService(IHttpService httpService, IBillingRespository billingRespository)
+        public BillingService(IHttpService httpService,
+                              IBillingRespository billingRespository,
+                              IMapper mapper,
+                              IOfferRepository offerRepository,
+                              IBillTypeRepository billTypeRepository)
         {
             _httpService = httpService;
             _billingRepository = billingRespository;
+            _mapper = mapper;
+            _offerRepository = offerRepository;
+            _billTypeRepository = billTypeRepository;
         }
 
-        public async Task<Result<string>> GetBillsByOfferIdAsync(string orderId, string authToken)
+        public async Task<Result<List<Bill>>> GetBillsByOfferIdAsync(string offerId, string authToken)
         {
             try
             {
-                var requestBuildResult = _httpService.CreateGetRequestWithParams(_billingBaseUrl, _offerIdParamName, orderId);
-                if (requestBuildResult.IsFailure) return Result.Failure<string>(requestBuildResult.Error);
+                var requestBuildResult = _httpService.CreateGetRequestWithParams(_billingBaseUrl, _offerIdParamName, offerId);
+                if (requestBuildResult.IsFailure) return Result.Failure<List<Bill>>(requestBuildResult.Error);
 
-                var result = await _httpService.SendGetRequestAsync(requestBuildResult.Value, authToken);
+                var result = await _httpService.SendGetRequestWithTokenAsync(requestBuildResult.Value, authToken);
+                if (result.IsFailure) return Result.Failure<List<Bill>>(result.Error);
 
-                return Result.Success(result.Value);
+                var convertResult = ConvertBillingEntryToBills(result.Value);
+                if (convertResult.IsFailure) return Result.Failure<List<Bill>>(convertResult.Error);
+
+                return Result.Success(convertResult.Value);
             }
             catch (HttpRequestException ex)
             {
-                return Result.Failure<string>(ex.Message);
+                return Result.Failure<List<Bill>>(ex.Message);
             }
         }
 
@@ -43,7 +59,13 @@ namespace MilitaryTask.BussinesLogic
             {
                 if (!bills.Any()) return Result.Failure("No bills to save");
 
-                var savingResult = await _billingRepository.SaveSortedBillsAsync(bills);
+                foreach (var bill in bills)
+                {
+                    await ProcessOfferAsync(bill);
+                    await ProcessBillTypeAsync(bill);
+                }
+
+                var savingResult = await _billingRepository.SaveBillsAsync(bills);
                 if (savingResult.IsFailure) return Result.Failure(savingResult.Error);
 
                 return Result.Success(savingResult);
@@ -52,45 +74,45 @@ namespace MilitaryTask.BussinesLogic
             {
                 return Result.Failure(ex.Message);
             }
-        } 
+        }
 
-        public async Task<Result<BillingEntriesList>> DeserializeDataToBillingEntryListAsync(string data)
+        private async Task ProcessBillTypeAsync(Bill bill)
         {
-            try
+            if (await _billTypeRepository.BillTypeExistsAsync(bill.BillType.BillTypeId))
             {
-                var billingEntries = JsonConvert.DeserializeObject<BillingEntriesList>(data) ?? new BillingEntriesList();
-                if (!billingEntries.BillingEntries.Any()) return Result.Failure<BillingEntriesList>("The billing list is empty");
-              
-                return Result.Success(billingEntries);
+                var existingBillType = await _billTypeRepository.GetBillTypeByIdAsync(bill.BillType.BillTypeId);
+                bill.BillTypeId = existingBillType.Id;
             }
-            catch (Exception ex)
+            else
             {
-                return Result.Failure<BillingEntriesList>(ex.Message);
+                await _billTypeRepository.SaveBillTypeAsync(bill.BillType);
+                bill.BillTypeId = bill.BillType.Id;
+            }            
+        }
+
+        private async Task ProcessOfferAsync(Bill bill)
+        {
+            if (await _offerRepository.OfferExistsAsync(bill.Offer.TenderId))
+            {
+                var existingTender = await _offerRepository.GetOfferByIdAsync(bill.Offer.TenderId);
+                bill.OfferId = existingTender.Id;
+            }
+            else
+            {
+                await _offerRepository.SaveOfferAsync(bill.Offer);
+                bill.OfferId = bill.Offer.Id;
             }
         }
 
-        public Result<List<Bill>> ConvertEntriesToBills(List<BillingEntry> billingEntries)
+        private Result<List<Bill>> ConvertBillingEntryToBills(string data)
         {
             try
             {
-                var bills = new List<Bill>();
+                var billingEntries = JsonConvert.DeserializeObject<BillingEntriesListDto>(data) ?? new BillingEntriesListDto();
+                if (!billingEntries.BillingEntries.Any()) return Result.Failure<List<Bill>>("The billing list is empty");
 
-                foreach (var billingEntry in billingEntries)
-                {
-                    var bill = new Bill()
-                    {
-                        BillId = billingEntry.Id,
-                        OccurredAt = billingEntry.OccurredAt,
-                        Tender = new Tender() { TenderId = billingEntry.Offer.Id, Name = billingEntry.Offer.Name },
-                        BillType = new BillType() { BillTypeId = billingEntry.Type.Id, Name = billingEntry.Type.Name },
-                        Amount = new Amount() { Value = billingEntry.Value.Amount, Currency = billingEntry.Value.Currency },
-                        TaxRate = new TaxRate() { Percentage = billingEntry.Tax.Percentage },
-                        AccountBalance = new AccountBalance() { Value = billingEntry.Balance.Amount, Currency = billingEntry.Balance.Currency },
-                    };
-
-                    bills.Add(bill);
-                }
-
+                var bills = _mapper.Map<List<Bill>>(billingEntries.BillingEntries);
+              
                 return Result.Success(bills);
             }
             catch (Exception ex)
