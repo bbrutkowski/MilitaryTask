@@ -80,8 +80,7 @@ namespace MilitaryTask.BussinesLogic
         {
             if (await _billTypeRepository.BillTypeExistsAsync(bill.BillType.BillTypeId))
             {
-                var existingBillType = await _billTypeRepository.GetBillTypeByIdAsync(bill.BillType.BillTypeId);
-                bill.BillTypeId = existingBillType.Id;
+                bill.BillTypeId = await _billTypeRepository.GetBillTypeByIdAsync(bill.BillType.BillTypeId);
             }
             else
             {
@@ -92,10 +91,9 @@ namespace MilitaryTask.BussinesLogic
 
         private async Task ProcessOfferAsync(Bill bill)
         {
-            if (await _offerRepository.OfferExistsAsync(bill.Offer.TenderId))
+            if (await _offerRepository.OfferExistsAsync(bill.Offer.OfferId))
             {
-                var existingTender = await _offerRepository.GetOfferByIdAsync(bill.Offer.TenderId);
-                bill.OfferId = existingTender.Id;
+                bill.OfferId = await _offerRepository.GetOfferByIdAsync(bill.Offer.OfferId);
             }
             else
             {
