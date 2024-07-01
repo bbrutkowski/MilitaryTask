@@ -18,7 +18,7 @@
         public int AccountBalanceId { get; set; }
         public AccountBalance AccountBalance { get; set; }
 
-        public int TenderId { get; set; }
-        public Tender Tender { get; set; }
+        public int OfferId { get; set; }
+        public Offer Offer { get; set; }
     }
 }

@@ -14,7 +14,7 @@ namespace MilitaryTask.DataContext
         public DbSet<Order> Orders { get; set; }
         public DbSet<Bill> Bills { get; set; }
         public DbSet<BillType> BillTypes { get; set; }
-        public DbSet<Tender> Tenders { get; set; }
+        public DbSet<Offer> Offerts { get; set; }
         public DbSet<Amount> Amounts { get; set; }
         public DbSet<TaxRate> TaxRates { get; set; }
         public DbSet<AccountBalance> AccountBalances { get; set; }
@@ -56,13 +56,50 @@ namespace MilitaryTask.DataContext
                 x.HasIndex(e => new { e.OrderId, e.StoreId })
                  .IsUnique()
                  .HasDatabaseName("si");
-            });     
+            });
+
+            modelBuilder.Entity<BillType>(b =>
+            {
+                b.HasKey(k => k.Id);
+
+                b.Property(i => i.Id)
+                 .ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<Amount>(b =>
+            {
+                b.HasKey(k => k.Id);
+
+                b.Property(i => i.Id)
+                 .ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<TaxRate>(b =>
+            {
+                b.HasKey(k => k.Id);
+
+                b.Property(i => i.Id)
+                 .ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<AccountBalance>(b =>
+            {
+                b.HasKey(k => k.Id);
+
+                b.Property(i => i.Id)
+                 .ValueGeneratedOnAdd();
+            });
 
             modelBuilder.Entity<Bill>(x =>
             {
-                x.HasOne(b => b.Tender)
+                x.HasKey(a => a.Id);
+
+                x.Property(a => a.Id)
+                 .ValueGeneratedOnAdd();
+
+                x.HasOne(b => b.Offer)
                  .WithMany(t => t.Bills)
-                 .HasForeignKey(b => b.TenderId)
+                 .HasForeignKey(b => b.OfferId)
                  .OnDelete(DeleteBehavior.Cascade);
 
                 x.HasOne(b => b.BillType)

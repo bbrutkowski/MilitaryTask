@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using AutoMapper;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MilitaryTask.AutoMapper;
 using MilitaryTask.BussinesLogic;
 using MilitaryTask.BussinesLogic.Interfaces;
 using MilitaryTask.Repository;
@@ -24,6 +26,15 @@ namespace MilitaryTask.Bindings
 
             Bind<IHttpService>().To<HttpService>();
 
+            var mapperConfig = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<MappingProfile>();
+            });
+
+            IMapper mapper = mapperConfig.CreateMapper();
+
+            Bind<IMapper>().ToConstant(mapper);
+
             Bind<IAuthService>().To<AuthService>();
 
             Bind<IBillingService>().To<BillingService>();
@@ -31,6 +42,8 @@ namespace MilitaryTask.Bindings
 
             Bind<IOfferService>().To<OfferService>();
             Bind<IOfferRepository>().To<OfferRepository>();
+
+            Bind<IBillTypeRepository>().To<BillTypeRepository>();
 
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)

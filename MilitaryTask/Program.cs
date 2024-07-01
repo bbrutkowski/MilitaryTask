@@ -48,20 +48,20 @@ internal class Program
         var orderIdResult = await orderService.GetOfferIdAsync();
         if (orderIdResult.IsFailure) return Result.Failure<string>(orderIdResult.Error); 
 
-        var billingDetailsResult = await billingService.GetBillsByOfferIdAsync(orderIdResult.Value, authResult.Value);
-        if (billingDetailsResult.IsFailure) Result.Failure<string>(billingDetailsResult.Error);
+        var billListResult = await billingService.GetBillsByOfferIdAsync(orderIdResult.Value, authResult.Value);
+        if (billListResult.IsFailure) Result.Failure<string>(billListResult.Error);
 
-        await Console.Out.WriteLineAsync("Billings details successfully downloaded");
+        await Console.Out.WriteLineAsync("Billings details successfully downloaded. Now it will be saved in the database");
 
-        var billingEntries = await billingService.DeserializeDataToBillingEntryListAsync(billingDetailsResult.Value);
-        if (billingEntries.IsFailure) return Result.Failure<string>(billingEntries.Error);
+        //var billsConvertResult = await billingService.ConvertBillingEntryToBillsAsync(billListResult.Value);
+        //if (billsConvertResult.IsFailure) return Result.Failure<string>(billsConvertResult.Error);
 
-        var convertResult = billingService.ConvertEntriesToBills(billingEntries.Value.BillingEntries);
-        if (convertResult.IsFailure) return Result.Failure<string>(convertResult.Error);
+        //var convertResult = billingService.ConvertEntriesToBills(billingEntries.Value.BillingEntries);
+        //if (convertResult.IsFailure) return Result.Failure<string>(convertResult.Error);
 
-        await Console.Out.WriteLineAsync("Downloaded bills will be saved to the database");
+        //await Console.Out.WriteLineAsync("Downloaded bills will be saved to the database");
 
-        var savingResult = await billingService.SaveBillsAsync(convertResult.Value);
+        var savingResult = await billingService.SaveBillsAsync(billListResult.Value);
         if (savingResult.IsFailure) return Result.Failure<string>(savingResult.Error);
 
         await Console.Out.WriteLineAsync("Data has been successfully saved to the database");

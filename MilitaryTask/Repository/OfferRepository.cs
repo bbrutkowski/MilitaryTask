@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
+using MilitaryTask.Model;
 using MilitaryTask.Repository.Interfaces;
 using DataContextAlias = MilitaryTask.DataContext.DataContext;
 
@@ -30,5 +31,24 @@ namespace MilitaryTask.Repository
                 throw new ApplicationException("Error occured while getting OrderId");
             }
         }
+
+        public async Task<bool> OfferExistsAsync(string offerId) => await _dataContext.Offerts.AnyAsync(x => x.TenderId == offerId);
+
+        public async Task<Offer> GetOfferByIdAsync(string offerId) => await _dataContext.Offerts.FirstOrDefaultAsync(x => x.TenderId == offerId) ?? new();
+
+        public async Task<Result> SaveOfferAsync(Offer offer)
+        {
+            try
+            {
+                await _dataContext.Offerts.AddAsync(offer);
+                await _dataContext.SaveChangesAsync();
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(ex.Message);
+            }
+        }   
     }
 }
