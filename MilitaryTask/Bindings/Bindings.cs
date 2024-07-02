@@ -27,8 +27,6 @@ namespace MilitaryTask.Bindings
                  .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                  .Build();
 
-            services.Configure<OAuthSettings>(configuration.GetSection("OAuthSettings"));
-
             var serviceProvider = services.BuildServiceProvider();
 
             var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();

@@ -12,11 +12,13 @@ namespace MilitaryTask.Repository
 
         public async Task<bool> OfferExistsAsync(string offerId) => await _dataContext.Offerts.AnyAsync(x => x.OfferId == offerId);
 
+        public async Task<Offer> GetOfferByIdAsync(string offerId) => await _dataContext.Offerts.FirstAsync(x => x.OfferId == offerId);
+
         public async Task<Result<string>> GetOfferIdAsync()
         {
             var random = new Random();
             //var randomNumber = random.Next(1, 3);
-            var randomNumber = 1;
+            var randomNumber = 2;
 
             try
             {
@@ -32,12 +34,6 @@ namespace MilitaryTask.Repository
             {
                 throw new ApplicationException("Error occured while getting OrderId");
             }
-        }
-
-        public async Task<Offer> GetOfferByIdAsync(string offerId)
-        {
-            var offer = await _dataContext.Offerts.FirstAsync(x => x.OfferId == offerId);
-            return offer;  
         }
 
         public async Task<Result> SaveOfferAsync(Offer offer)

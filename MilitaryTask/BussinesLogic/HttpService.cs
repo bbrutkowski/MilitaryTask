@@ -13,36 +13,14 @@ namespace MilitaryTask.BussinesLogic
 
         public HttpClient CreateClient() => _httpClientFactory.CreateClient();
 
-        public async Task<Result<string>> SendGetRequestAsync(HttpRequestMessage request)
+        public async Task<Result<string>> GetResponseContentAsync(HttpRequestMessage request, string? bearerToken)
         {
-            var client = CreateClient();
-
             try
             {
-                var response = await client.SendAsync(request);
-                var content = await response.Content.ReadAsStringAsync();
-
-                return Result.Success(content);
-            }
-            catch (Exception ex)
-            {
-                return Result.Failure<string>(ex.Message);
-            }
-        }
-
-        public async Task<Result<string>> SendGetRequestWithTokenAsync(HttpRequestMessage request, string bearerToken)
-        {
-            var client = CreateClient();
-
-            try
-            {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
-
-                var response = await client.SendAsync(request);
+                var response = await SendRequestAsync(request, bearerToken);
                 if (!response.IsSuccessStatusCode) return Result.Failure<string>($"Sending the request resulted in a code: {response.StatusCode}");
 
                 var content = await response.Content.ReadAsStringAsync();
-                if (string.IsNullOrEmpty(content)) return Result.Failure<string>(content);
                 return Result.Success(content);
             }
             catch (Exception ex)
@@ -71,6 +49,18 @@ namespace MilitaryTask.BussinesLogic
             {
                 return Result.Failure<HttpRequestMessage>(ex.Message);
             }
+        }
+
+        private async Task<HttpResponseMessage> SendRequestAsync(HttpRequestMessage request, string? bearerToken)
+        {          
+            var httpClient = CreateClient();
+
+            if (!string.IsNullOrEmpty(bearerToken))
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+            }
+
+            return await httpClient.SendAsync(request);
         }
     }
 }

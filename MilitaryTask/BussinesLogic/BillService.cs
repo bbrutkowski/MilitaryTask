@@ -39,7 +39,7 @@ namespace MilitaryTask.BussinesLogic
                 var requestBuildResult = _httpService.CreateGetRequestWithParams(_billingBaseUrl, _offerIdParamName, offerId);
                 if (requestBuildResult.IsFailure) return Result.Failure<List<Bill>>(requestBuildResult.Error);
 
-                var result = await _httpService.SendGetRequestWithTokenAsync(requestBuildResult.Value, authToken);
+                var result = await _httpService.GetResponseContentAsync(requestBuildResult.Value, authToken);
                 if (result.IsFailure) return Result.Failure<List<Bill>>(result.Error);
 
                 var convertResult = ConvertBillingEntryToBills(result.Value);
@@ -55,10 +55,10 @@ namespace MilitaryTask.BussinesLogic
 
         public async Task<Result> SaveBillsAsync(List<Bill> bills)
         {
+            if (!bills.Any()) return Result.Failure("No bills to save");
+
             try
             {
-                if (!bills.Any()) return Result.Failure("No bills to save");
-
                 foreach (var bill in bills)
                 {
                     await ProcessOfferAsync(bill);

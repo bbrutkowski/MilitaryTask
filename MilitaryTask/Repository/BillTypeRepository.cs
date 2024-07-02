@@ -13,11 +13,7 @@ namespace MilitaryTask.Repository
         public BillTypeRepository(DataContextAlias dataContext) => _dataContext = dataContext;
 
         public async Task<bool> BillTypeExistsAsync(string billTypeId) => await _dataContext.BillTypes.AnyAsync(x => x.BillTypeId == billTypeId);
-        public async Task<BillType> GetBillTypeByIdAsync(string billTypeId)
-        {
-            var billType = await _dataContext.BillTypes.FirstAsync(x => x.BillTypeId == billTypeId);
-            return billType;
-        }
+        public async Task<BillType> GetBillTypeByIdAsync(string billTypeId) => await _dataContext.BillTypes.FirstAsync(x => x.BillTypeId == billTypeId);
 
         public async Task<Result> SaveBillTypeAsync(BillType billType)
         {
