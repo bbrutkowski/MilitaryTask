@@ -34,11 +34,10 @@ namespace MilitaryTask.Repository
             }
         }
 
-        public async Task<int> GetOfferByIdAsync(string offerId)
+        public async Task<Offer> GetOfferByIdAsync(string offerId)
         {
-            return await _dataContext.Offerts.Where(x => x.OfferId == offerId)
-                .Select(x => x.Id)
-                .FirstOrDefaultAsync();     
+            var offer = await _dataContext.Offerts.FirstAsync(x => x.OfferId == offerId);
+            return offer;  
         }
 
         public async Task<Result> SaveOfferAsync(Offer offer)

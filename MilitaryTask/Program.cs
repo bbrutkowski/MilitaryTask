@@ -1,7 +1,9 @@
 ﻿using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using MilitaryTask.Bindings;
 using MilitaryTask.BussinesLogic.Interfaces;
+using MilitaryTask.Model.Auth;
 using Ninject;
 
 internal class Program
@@ -33,10 +35,13 @@ internal class Program
         var configuration = AppConfig();
         var kernel = new StandardKernel();
 
+        kernel.Bind<OAuthSettings>().ToMethod(context =>
+            context.Kernel.Get<IOptions<OAuthSettings>>().Value);
+
         kernel.Bind<IConfiguration>().ToConstant(configuration);
         kernel.Load(new Bindings());
 
-        var billingService = kernel.Get<IBillingService>();
+        var billingService = kernel.Get<IBillService>();
         var authService = kernel.Get<IAuthService>();
         var orderService = kernel.Get<IOfferService>();
 
@@ -45,10 +50,10 @@ internal class Program
 
         await Console.Out.WriteLineAsync("Authorization granted");
 
-        var orderIdResult = await orderService.GetOfferIdAsync(); 
-        if (orderIdResult.IsFailure) return Result.Failure<string>(orderIdResult.Error); 
+        var offerIdResult = await orderService.GetOfferIdAsync(); 
+        if (offerIdResult.IsFailure) return Result.Failure<string>(offerIdResult.Error); 
 
-        var billListResult = await billingService.GetBillsByOfferIdAsync(orderIdResult.Value, authResult.Value);
+        var billListResult = await billingService.GetBillsByOfferIdAsync(offerIdResult.Value, authResult.Value);
         if (billListResult.IsFailure) Result.Failure<string>(billListResult.Error);
 
         await Console.Out.WriteLineAsync("Billings details successfully downloaded. Now it will be saved in the database");

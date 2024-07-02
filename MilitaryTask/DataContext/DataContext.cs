@@ -1,6 +1,5 @@
-﻿  using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using MilitaryTask.Model;
 
 namespace MilitaryTask.DataContext
@@ -21,9 +20,7 @@ namespace MilitaryTask.DataContext
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DbConnection"))
-                          .EnableSensitiveDataLogging()
-                          .LogTo(Console.WriteLine, LogLevel.Information);
+            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DbConnection"));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

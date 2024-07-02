@@ -7,7 +7,7 @@ namespace MilitaryTask.Repository.Interfaces
     {
         Task<Result<string>> GetOfferIdAsync();
         Task<bool> OfferExistsAsync(string offerId);
-        Task<int> GetOfferByIdAsync(string offerId);
+        Task<Offer> GetOfferByIdAsync(string offerId);
         Task<Result> SaveOfferAsync(Offer offer);
     }
 }

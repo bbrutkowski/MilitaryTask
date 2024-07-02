@@ -1,12 +1,16 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using MilitaryTask.AutoMapper;
 using MilitaryTask.BussinesLogic;
 using MilitaryTask.BussinesLogic.Interfaces;
+using MilitaryTask.Model.Auth;
 using MilitaryTask.Repository;
 using MilitaryTask.Repository.Interfaces;
+using Ninject;
 using Ninject.Modules;
+using static CSharpFunctionalExtensions.Result;
 using DataContextAlias = MilitaryTask.DataContext.DataContext;
 
 namespace MilitaryTask.Bindings
@@ -17,6 +21,13 @@ namespace MilitaryTask.Bindings
         {
             var services = new ServiceCollection();
             services.AddHttpClient();
+
+            var configuration = new ConfigurationBuilder()
+                 .SetBasePath(AppContext.BaseDirectory)
+                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                 .Build();
+
+            services.Configure<OAuthSettings>(configuration.GetSection("OAuthSettings"));
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -37,18 +48,13 @@ namespace MilitaryTask.Bindings
 
             Bind<IAuthService>().To<AuthService>();
 
-            Bind<IBillingService>().To<BillingService>();
-            Bind<IBillingRespository>().To<BillingRepository>();
+            Bind<IBillService>().To<BillService>();
+            Bind<IBillRespository>().To<BillRepository>();
 
             Bind<IOfferService>().To<OfferService>();
             Bind<IOfferRepository>().To<OfferRepository>();
 
             Bind<IBillTypeRepository>().To<BillTypeRepository>();
-
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .Build();
 
             Bind<IConfiguration>().ToConstant(configuration);
             Bind<DataContextAlias>().ToSelf().WithConstructorArgument("configuration", configuration);

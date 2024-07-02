@@ -8,10 +8,10 @@ using Newtonsoft.Json;
 
 namespace MilitaryTask.BussinesLogic
 {
-    internal class BillingService : IBillingService
+    internal class BillService : IBillService
     {
         private readonly IHttpService _httpService; 
-        private readonly IBillingRespository _billingRepository;
+        private readonly IBillRespository _billRepository;
         private readonly IMapper _mapper;
         private readonly IOfferRepository _offerRepository;
         private readonly IBillTypeRepository _billTypeRepository;
@@ -19,14 +19,14 @@ namespace MilitaryTask.BussinesLogic
         private readonly string _billingBaseUrl = "https://api.allegro.pl/billing/billing-entries";
         private readonly string _offerIdParamName = "offer.id";
 
-        public BillingService(IHttpService httpService,
-                              IBillingRespository billingRespository,
+        public BillService(IHttpService httpService,
+                              IBillRespository billRespository,
                               IMapper mapper,
                               IOfferRepository offerRepository,
                               IBillTypeRepository billTypeRepository)
         {
             _httpService = httpService;
-            _billingRepository = billingRespository;
+            _billRepository = billRespository;
             _mapper = mapper;
             _offerRepository = offerRepository;
             _billTypeRepository = billTypeRepository;
@@ -65,7 +65,7 @@ namespace MilitaryTask.BussinesLogic
                     await ProcessBillTypeAsync(bill);
                 }
 
-                var savingResult = await _billingRepository.SaveBillsAsync(bills);
+                var savingResult = await _billRepository.SaveBillsAsync(bills);
                 if (savingResult.IsFailure) return Result.Failure(savingResult.Error);
 
                 return Result.Success(savingResult);
@@ -80,7 +80,8 @@ namespace MilitaryTask.BussinesLogic
         {
             if (await _billTypeRepository.BillTypeExistsAsync(bill.BillType.BillTypeId))
             {
-                bill.BillTypeId = await _billTypeRepository.GetBillTypeByIdAsync(bill.BillType.BillTypeId);
+                bill.BillType = await _billTypeRepository.GetBillTypeByIdAsync(bill.BillType.BillTypeId);
+                bill.BillTypeId = bill.BillType.Id;
             }
             else
             {
@@ -93,14 +94,15 @@ namespace MilitaryTask.BussinesLogic
         {
             if (await _offerRepository.OfferExistsAsync(bill.Offer.OfferId))
             {
-                bill.OfferId = await _offerRepository.GetOfferByIdAsync(bill.Offer.OfferId);
+                bill.Offer = await _offerRepository.GetOfferByIdAsync(bill.Offer.OfferId);
+                bill.OfferId = bill.Offer.Id;
             }
             else
             {
                 await _offerRepository.SaveOfferAsync(bill.Offer);
                 bill.OfferId = bill.Offer.Id;
             }
-        }
+        } 
 
         private Result<List<Bill>> ConvertBillingEntryToBills(string data)
         {
