@@ -17,7 +17,7 @@ namespace MilitaryTask.BussinesLogic
         private readonly IBillTypeRepository _billTypeRepository;
 
         private readonly string _billingBaseUrl = "https://api.allegro.pl/billing/billing-entries";
-        private readonly string _offerIdParamName = "offer.id";
+        private readonly string _offerIdParamName = "offer.id";  // "order.id if I had a sale"
 
         public BillService(IHttpService httpService,
                               IBillRespository billRespository,
@@ -32,20 +32,29 @@ namespace MilitaryTask.BussinesLogic
             _billTypeRepository = billTypeRepository;
         }
 
-        public async Task<Result<List<Bill>>> GetBillsByOfferIdAsync(string offerId, string authToken)
+        public async Task<Result<List<Bill>>> GetBillsByOfferIdAsync(List<string> orderIds, string authToken)
         {
+            if (!orderIds.Any()) return Result.Failure<List<Bill>>("Id not provided");
+
+            var bills = new List<Bill>();
+
             try
             {
-                var requestBuildResult = _httpService.CreateGetRequestWithParams(_billingBaseUrl, _offerIdParamName, offerId);
-                if (requestBuildResult.IsFailure) return Result.Failure<List<Bill>>(requestBuildResult.Error);
+                foreach (var orderId in orderIds)
+                {
+                    var requestBuildResult = _httpService.CreateGetRequestWithParams(_billingBaseUrl, _offerIdParamName, orderId);
+                    if (requestBuildResult.IsFailure) return Result.Failure<List<Bill>>(requestBuildResult.Error);
 
-                var result = await _httpService.GetResponseContentAsync(requestBuildResult.Value, authToken);
-                if (result.IsFailure) return Result.Failure<List<Bill>>(result.Error);
+                    var result = await _httpService.GetResponseContentAsync(requestBuildResult.Value, withAuthToken: true, authToken);
+                    if (result.IsFailure) return Result.Failure<List<Bill>>(result.Error);
 
-                var convertResult = ConvertBillingEntryToBills(result.Value);
-                if (convertResult.IsFailure) return Result.Failure<List<Bill>>(convertResult.Error);
+                    var convertResult = ConvertBillingEntryToBills(result.Value);
+                    if (convertResult.IsFailure) return Result.Failure<List<Bill>>(convertResult.Error);
 
-                return Result.Success(convertResult.Value);
+                    bills.AddRange(convertResult.Value);
+                }
+                
+                return Result.Success(bills);
             }
             catch (HttpRequestException ex)
             {
@@ -109,7 +118,6 @@ namespace MilitaryTask.BussinesLogic
             try
             {
                 var billingEntries = JsonConvert.DeserializeObject<BillingEntriesListDto>(data) ?? new BillingEntriesListDto();
-                if (!billingEntries.BillingEntries.Any()) return Result.Failure<List<Bill>>("The billing list is empty");
 
                 var bills = _mapper.Map<List<Bill>>(billingEntries.BillingEntries);
               

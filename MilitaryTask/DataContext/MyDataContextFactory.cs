@@ -4,21 +4,21 @@ using Microsoft.Extensions.Configuration;
 
 namespace MilitaryTask.DataContext
 {
-    public class DataContextFactory : IDesignTimeDbContextFactory<DataContext>
+    public class MyDataContextFactory : IDesignTimeDbContextFactory<MyDataContext>
     {
-        public DataContext CreateDbContext(string[] args)
+        public MyDataContext CreateDbContext(string[] args)
         {
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .Build();
 
-            var optionsBuilder = new DbContextOptionsBuilder<DataContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<MyDataContext>();
             var connectionString = configuration.GetConnectionString("DbConnection");
 
             optionsBuilder.UseSqlServer(connectionString);
 
-            return new DataContext(configuration);
+            return new MyDataContext(configuration);
         }
     }
 }

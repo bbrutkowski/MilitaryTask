@@ -4,11 +4,11 @@ using MilitaryTask.Model;
 
 namespace MilitaryTask.DataContext
 {
-    public class DataContext : DbContext
+    public class MyDataContext : DbContext
     {
         private readonly IConfiguration _configuration;
 
-        public DataContext(IConfiguration configuration) => _configuration = configuration;
+        public MyDataContext(IConfiguration configuration) => _configuration = configuration;
 
         public DbSet<Order> Orders { get; set; }
         public DbSet<Bill> Bills { get; set; }

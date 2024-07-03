@@ -11,13 +11,13 @@ namespace MilitaryTask.BussinesLogic
 
         public HttpService(IHttpClientFactory httpClientFactory) => _httpClientFactory = httpClientFactory;
 
-        public HttpClient CreateClient() => _httpClientFactory.CreateClient();
+        private HttpClient CreateClient() => _httpClientFactory.CreateClient();
 
-        public async Task<Result<string>> GetResponseContentAsync(HttpRequestMessage request, string? bearerToken)
+        public async Task<Result<string>> GetResponseContentAsync(HttpRequestMessage request, bool withAuthToken, string? bearerToken)
         {
             try
             {
-                var response = await SendRequestAsync(request, bearerToken);
+                var response = await SendRequestAsync(request, withAuthToken, bearerToken);
                 if (!response.IsSuccessStatusCode) return Result.Failure<string>($"Sending the request resulted in a code: {response.StatusCode}");
 
                 var content = await response.Content.ReadAsStringAsync();
@@ -51,13 +51,14 @@ namespace MilitaryTask.BussinesLogic
             }
         }
 
-        private async Task<HttpResponseMessage> SendRequestAsync(HttpRequestMessage request, string? bearerToken)
+        private async Task<HttpResponseMessage> SendRequestAsync(HttpRequestMessage request, bool withAuthToken, string? bearerToken)
         {          
             var httpClient = CreateClient();
 
-            if (!string.IsNullOrEmpty(bearerToken))
+            if (withAuthToken && !string.IsNullOrEmpty(bearerToken))
             {
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.allegro.public.v1+json"));
             }
 
             return await httpClient.SendAsync(request);

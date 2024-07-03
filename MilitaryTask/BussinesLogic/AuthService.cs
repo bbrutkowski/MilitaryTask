@@ -50,7 +50,7 @@ namespace MilitaryTask.BussinesLogic
                 var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_clientId}:{_clientSecret}"));
                 request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
-                var response = await _httpService.GetResponseContentAsync(request, string.Empty);
+                var response = await _httpService.GetResponseContentAsync(request, withAuthToken: false, string.Empty);
                 if (response.IsFailure) return Result.Failure<string>("Access token not received");
 
                 var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(response.Value);
@@ -76,7 +76,7 @@ namespace MilitaryTask.BussinesLogic
 
                 request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
-                var response = await _httpService.GetResponseContentAsync(request, string.Empty);
+                var response = await _httpService.GetResponseContentAsync(request, withAuthToken: false, string.Empty);
                 if (response.IsFailure) return Result.Failure<DeviceCodeResponse>("Device number not received");
 
                 var deviceCodeResult = JsonConvert.DeserializeObject<DeviceCodeResponse>(response.Value);
