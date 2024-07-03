@@ -5,7 +5,7 @@ namespace MilitaryTask.BussinesLogic.Interfaces
 {
     public interface IBillService
     {
-        Task<Result<List<Bill>>> GetBillsByOfferIdAsync(string orderId, string authToken);
+        Task<Result<List<Bill>>> GetBillsByOfferIdAsync(List<string> offerIds, string authToken);
         Task<Result> SaveBillsAsync(List<Bill> billings);
     }
 }
